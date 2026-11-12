@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulation: Zerlegung von Wasser – Hofmann'scher Wasserzersetzungsapparat</title>
+<style>
+:root{
+  --bg:#f3f6fb; --card:#ffffff; --ink:#1b2a3a; --muted:#5b6b7c; --line:#d8e0ea;
+  --accent:#0b6bcb; --accent-d:#084f96; --warn:#c2410c; --ok:#15803d; --bad:#b91c1c;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.4}
+header{background:#12304f;color:#fff;padding:10px 22px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+header h1{margin:0;font-size:1.3rem;font-weight:700}
+header p{margin:2px 0 0;font-size:.88rem;opacity:.85}
+.modeSwitch{display:flex;border:1px solid #5d7fa3;border-radius:10px;overflow:hidden}
+.modeSwitch button{border:0;border-radius:0;background:transparent;color:#fff;padding:8px 14px;font-size:.95rem}
+.modeSwitch button.sel{background:#fff;color:#12304f;font-weight:700}
+.layout{display:grid;grid-template-columns:minmax(430px,1.2fr) minmax(340px,.8fr);gap:16px;padding:16px;max-width:1600px;margin:0 auto;align-items:start}
+@media(max-width:1020px){.layout{grid-template-columns:1fr}}
+.stage{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px;position:relative}
+.mode-student .stage{position:sticky;top:8px}
+@media(max-width:1020px){.mode-student .stage{position:static}}
+svg#svg{width:100%;height:auto;max-height:70vh;display:block}
+.caption{margin:4px 6px;padding:10px 14px;border-radius:10px;background:#eef5fd;border-left:5px solid var(--accent);font-size:1.05rem;min-height:3.2em}
+.caption.result{background:#ecfdf3;border-left-color:var(--ok)}
+.caption.warn{background:#fff4ec;border-left-color:var(--warn)}
+.stepbar{display:flex;gap:10px;align-items:center;margin:4px 6px 6px;min-height:44px}
+button{font:inherit;cursor:pointer;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 14px}
+button:hover:not(:disabled){border-color:var(--accent)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--accent);border-color:var(--accent-d);color:#fff;font-weight:600}
+button.primary:hover:not(:disabled){background:var(--accent-d)}
+button.big{font-size:1.05rem;padding:10px 18px}
+#nextBtn{font-size:1.15rem;padding:10px 24px}
+.panel{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h2{margin:0 0 8px;font-size:1.05rem;color:#12304f}
+.card h3{margin:10px 0 4px;font-size:.98rem;color:#12304f}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.85rem;font-weight:700}
+.pill.on{background:#dcfce7;color:#166534}.pill.off{background:#e5e7eb;color:#4b5563}
+input[type=range]{width:100%}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{padding:5px 12px}
+.seg button.sel{background:var(--accent);color:#fff;border-color:var(--accent-d)}
+.hint{font-size:.86rem;color:var(--muted);margin-top:4px}
+table.meas{width:100%;border-collapse:collapse;font-size:.95rem}
+table.meas th{font-size:.82rem;text-align:left;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line);padding:3px 4px}
+table.meas td{padding:3px 4px;border-bottom:1px solid #eef2f7;font-variant-numeric:tabular-nums}
+label.opt{display:flex;align-items:flex-start;gap:7px;font-size:.97rem;cursor:pointer;margin:3px 0}
+textarea,input[type=text],select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 8px;width:100%}
+select{width:auto;max-width:100%}
+textarea{min-height:64px;resize:vertical}
+.nav{display:flex;gap:6px;flex-wrap:wrap}
+.nav button{padding:5px 10px;font-size:.9rem}
+.nav button.cur{background:#12304f;color:#fff;border-color:#12304f}
+.nav button.done::before{content:"✓ ";color:var(--ok)}
+.nav button.cur.done::before{color:#9be8b3}
+.msg{margin-top:6px;padding:6px 10px;border-radius:8px;font-size:.92rem}
+.msg.ok{background:#ecfdf3;color:#14532d}.msg.bad{background:#fef2f2;color:#7f1d1d}.msg.info{background:#eef5fd;color:#0c3b73}
+.ordercards{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.ordercards button{text-align:left}
+.ordercards button.done{background:#ecfdf3;border-color:#86efac;color:#14532d}
+.protoItem{margin-bottom:6px;font-size:.95rem}
+.protoItem .deut{display:block;color:var(--ok);font-style:italic}
+details summary{cursor:pointer;font-weight:600}
+details ul{margin:6px 0 0;padding-left:18px;font-size:.92rem}
+.gate{margin-top:10px}
+
+/* Overlays (Demo) */
+.ovl{position:absolute;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:0 6px 24px rgba(15,40,70,.18);z-index:5}
+#predictCard .opt-btn.right{background:#dcfce7;border-color:#16a34a;font-weight:700}
+#predictCard .opt-btn.wrong{opacity:.55}
+#measCard table.meas{font-size:1.05rem}
+#deutCard{font-size:1.05rem}
+#deutCard .eq{font-size:1.2rem;font-weight:700;margin:4px 0}
+.mode-student #demoBar,.mode-student .demoOnly{display:none}
+.mode-demo .studentOnly{display:none!important}
+#predictCard h3{margin:0 0 8px;font-size:1.1rem}
+#predictCard .opt-btn{display:flex;justify-content:space-between;gap:8px;width:100%;margin-bottom:6px;font-size:1rem;text-align:left}
+#demoSide .ovl2{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:0 2px 10px rgba(15,40,70,.10)}
+.hq{margin-top:12px;padding-top:8px;border-top:1px solid var(--line)}
+.hq h4{margin:0 0 6px;font-size:1rem;color:#12304f}
+.hq .hopt{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;margin-bottom:3px;padding:4px 10px;font-size:.92rem}
+.hq .hopt.right{background:#dcfce7;border-color:#16a34a;font-weight:700}
+.hq .hopt.wrong{opacity:.5}
+.hq .hneed{font-size:.85rem;color:var(--muted);margin-top:2px}
+.hq .hnote{font-size:.95rem;margin-top:4px;color:#14532d;font-weight:600}
+.dsec{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;background:#fff}
+.dsec h4{margin:0;font-size:.9rem;color:#12304f}
+.dsec button{width:100%}
+.dsec .seg button{width:auto;flex:1;padding:5px 6px}
+.dsec .row{gap:12px}
+.dsec label{font-size:.95rem}
+.mode-demo .layout{display:block;max-width:none;padding:8px}
+.mode-demo .stage{display:grid;grid-template-columns:270px minmax(0,1fr) 360px;grid-template-rows:minmax(0,1fr) auto;gap:8px 12px;height:calc(100vh - 78px);padding:10px}
+.mode-demo header p{display:none}
+.mode-demo header{padding:6px 18px}
+.mode-demo .capwrap{display:flex;gap:10px;align-items:center}
+#predictCard{position:sticky;top:0;z-index:3}
+details.dsec{display:block}
+.dsecIn{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.dsec summary{font-size:.9rem;color:#12304f}
+.mode-demo #demoBar{grid-column:1;grid-row:1 / span 2;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:0 4px 0 0}
+.mode-demo svg#svg{grid-column:2;grid-row:1;width:100%;height:100%;max-height:none;min-height:0}
+.mode-demo .capwrap{grid-column:2;grid-row:2}
+.mode-demo #demoSide{grid-column:3;grid-row:1 / span 2;display:flex;flex-direction:column;gap:10px;overflow:auto;min-width:0}
+.mode-demo .caption{font-size:1.3rem;padding:10px 16px;min-height:2.6em;margin:0;flex:1}
+.mode-demo .stepbar{margin:0;min-height:0}
+@media(max-width:1150px){.mode-demo .stage{display:block;height:auto}.mode-demo svg#svg{height:auto;max-height:62vh}.mode-demo #demoBar{flex-direction:row;flex-wrap:wrap}.mode-demo #demoSide{margin-top:10px}}
+
+/* Protokoll */
+#protoModal{position:fixed;inset:0;background:#e9eef5;z-index:50;overflow:auto;padding:16px}
+#protoModal[hidden]{display:none}
+.protoTools{max-width:860px;margin:0 auto 10px;display:flex;gap:8px;flex-wrap:wrap}
+.pr{max-width:860px;margin:0 auto;background:#fff;padding:28px 34px;border:1px solid var(--line);font-size:.98rem}
+.pr h1{font-size:1.4rem;margin:0 0 4px}
+.pr h2{font-size:1.1rem;margin:16px 0 6px;border-bottom:2px solid #12304f;padding-bottom:2px;color:#12304f}
+.pr table{border-collapse:collapse;margin:6px 0}
+.pr td,.pr th{border:1px solid #9aa8b8;padding:3px 9px;text-align:center;font-variant-numeric:tabular-nums}
+.pr .meta{display:flex;gap:24px;flex-wrap:wrap;margin:6px 0 10px}
+.pr .meta span{min-width:180px;border-bottom:1px solid #444;padding-bottom:1px}
+.pr .eq{font-size:1.1rem;font-weight:700;margin:4px 0}
+.pr ol,.pr ul{margin:4px 0;padding-left:22px}
+.pr .skizze{max-width:480px}
+.pr .two{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+@media print{
+  body.printing > *:not(#protoModal){display:none!important}
+  #protoModal{position:static;overflow:visible;background:#fff;padding:0}
+  .protoTools{display:none}
+  .pr{border:0;padding:0;max-width:none}
+  @page{margin:14mm}
+}
+.kurz header,.kurz #studentPanel>details.card:last-child,.kurz #studentPanel section.card:last-child{display:none}
+.kurz .layout{padding:8px;gap:10px}
+.kurz #kurzDone{background:#ecfdf3;border-color:#15803d}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Zerlegung von Wasser – Hofmann'scher Wasserzersetzungsapparat</h1>
+    <p>Simulation mit Glimmspanprobe und Knallgasprobe</p>
+  </div>
+  <div class="modeSwitch" id="modeSwitch">
+    <button data-m="student">Schüler (Einzelarbeit)</button>
+    <button data-m="demo">Demo (Beamer)</button>
+  </div>
+</header>
+
+<div id="app" class="mode-student">
+<div class="layout">
+<section class="stage" id="stage">
+<svg id="svg" viewBox="0 -40 760 830" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Hofmann'scher Wasserzersetzungsapparat">
+  <defs>
+    <linearGradient id="gloss" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity=".7"/>
+      <stop offset=".18" stop-color="#fff" stop-opacity=".05"/>
+      <stop offset=".82" stop-color="#fff" stop-opacity=".03"/>
+      <stop offset="1" stop-color="#fff" stop-opacity=".5"/>
+    </linearGradient>
+    <radialGradient id="glowGrad">
+      <stop offset="0" stop-color="#fff3b0"/>
+      <stop offset=".35" stop-color="#ff9a1f"/>
+      <stop offset="1" stop-color="#e03a00" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="cav"><path d="M168 118 L212 118 L212 526 L336 526 L336 70 L312 40 L408 40 L384 70 L384 526 L508 526 L508 118 L552 118 L552 546 L168 546 Z"/></clipPath>
+  </defs>
+
+  <rect x="110" y="566" width="540" height="26" rx="6" fill="#475569"/>
+  <rect x="130" y="552" width="500" height="14" fill="#64748b"/>
+
+  <path d="M168 118 L212 118 L212 526 L336 526 L336 70 L312 40 L408 40 L384 70 L384 526 L508 526 L508 118 L552 118 L552 546 L168 546 Z" fill="#f7fafd"/>
+  <g clip-path="url(#cav)">
+    <rect id="liq0" x="168" y="118" width="44" height="428" fill="#8ecbea" fill-opacity=".55"/>
+    <rect id="liq1" x="508" y="118" width="44" height="428" fill="#8ecbea" fill-opacity=".55"/>
+    <rect id="liqC" x="336" y="96" width="48" height="450" fill="#8ecbea" fill-opacity=".55"/>
+    <rect x="168" y="526" width="384" height="20" fill="#8ecbea" fill-opacity=".55"/>
+    <line id="surf0" x1="168" x2="212" y1="118" y2="118" stroke="#3b8fc4" stroke-width="2"/>
+    <line id="surf1" x1="508" x2="552" y1="118" y2="118" stroke="#3b8fc4" stroke-width="2"/>
+    <line id="surfC" x1="336" x2="384" y1="96" y2="96" stroke="#3b8fc4" stroke-width="2"/>
+  </g>
+
+  <text id="gasLbl0" x="190" y="150" text-anchor="middle" font-size="22" font-weight="700" fill="#2b4a6b" visibility="hidden">?</text>
+  <text id="gasLbl1" x="530" y="150" text-anchor="middle" font-size="22" font-weight="700" fill="#2b4a6b" visibility="hidden">?</text>
+
+  <g id="bubbles"></g>
+
+  <polyline id="wire0" points="190,504 190,625 290,625 290,650" fill="none" stroke="#1f3a93" stroke-width="4" stroke-linejoin="round"/>
+  <polyline id="wire1" points="530,504 530,625 430,625 430,650" fill="none" stroke="#d62839" stroke-width="4" stroke-linejoin="round"/>
+  <rect x="182" y="452" width="16" height="56" rx="2" fill="#b3bcc7" stroke="#6b7785"/>
+  <rect x="522" y="452" width="16" height="56" rx="2" fill="#b3bcc7" stroke="#6b7785"/>
+
+  <path d="M168 118 L212 118 L212 526 L336 526 L336 70 L312 40 L408 40 L384 70 L384 526 L508 526 L508 118 L552 118 L552 546 L168 546 Z" fill="none" stroke="#c7d4e1" stroke-width="1"/>
+  <path d="M304 34 L330 70 L330 520 L218 520 L218 112 L162 112 L162 552 L558 552 L558 112 L502 112 L502 520 L390 520 L390 70 L416 34" fill="none" stroke="#6b8196" stroke-width="3" stroke-linejoin="round"/>
+  <rect x="162" y="112" width="56" height="440" fill="url(#gloss)" pointer-events="none"/>
+  <rect x="502" y="112" width="56" height="440" fill="url(#gloss)" pointer-events="none"/>
+  <rect x="330" y="70" width="60" height="482" fill="url(#gloss)" pointer-events="none"/>
+
+  <g id="scale" font-size="13" fill="#44546a" stroke="#44546a"></g>
+  <text x="148" y="106" text-anchor="end" font-size="13" fill="#44546a">mL</text>
+  <text x="572" y="106" font-size="13" fill="#44546a">mL</text>
+  <text x="360" y="22" text-anchor="middle" font-size="13" fill="#44546a">Vorratsgefäß</text>
+  <text id="elecLbl" x="360" y="540" text-anchor="middle" font-size="12" fill="#2b5d82" opacity=".9">Flüssigkeit?</text>
+
+  <g id="sc0">
+    <rect x="184" y="96" width="12" height="16" fill="#e5eef7" stroke="#6b8196" stroke-width="2"/>
+    <rect x="177" y="80" width="26" height="16" rx="3" fill="#8a97a6" stroke="#5a6877" stroke-width="1.5"/>
+    <rect x="186" y="64" width="8" height="16" fill="#e5eef7" stroke="#6b8196" stroke-width="1.5"/>
+    <g id="hnd0"><rect x="-19" y="-3.5" width="38" height="7" rx="3.5" fill="#d64545" stroke="#8f2323"/></g>
+  </g>
+  <g id="sc1">
+    <rect x="524" y="96" width="12" height="16" fill="#e5eef7" stroke="#6b8196" stroke-width="2"/>
+    <rect x="517" y="80" width="26" height="16" rx="3" fill="#8a97a6" stroke="#5a6877" stroke-width="1.5"/>
+    <rect x="526" y="64" width="8" height="16" fill="#e5eef7" stroke="#6b8196" stroke-width="1.5"/>
+    <g id="hnd1"><rect x="-19" y="-3.5" width="38" height="7" rx="3.5" fill="#d64545" stroke="#8f2323"/></g>
+  </g>
+
+  <g id="badge0"><circle cx="190" cy="600" r="12" fill="#1f3a93"/><text x="190" y="606" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">−</text></g>
+  <g id="badge1"><circle cx="530" cy="600" r="12" fill="#d62839"/><text x="530" y="606" text-anchor="middle" font-size="18" font-weight="700" fill="#fff">+</text></g>
+  <text id="poleName0" x="208" y="605" font-size="14" font-weight="600" fill="#1f3a93">Minuspol (−)</text>
+  <text id="poleName1" x="548" y="605" font-size="14" font-weight="600" fill="#d62839">Pluspol (+)</text>
+
+  <rect x="250" y="650" width="220" height="122" rx="10" fill="#1f2937"/>
+  <rect x="262" y="664" width="94" height="46" rx="6" fill="#0b1220"/>
+  <rect x="364" y="664" width="94" height="46" rx="6" fill="#0b1220"/>
+  <text id="dispU" x="309" y="697" text-anchor="middle" font-family="Consolas,Menlo,monospace" font-size="22" fill="#6ef0a0">0.0 V</text>
+  <text id="dispI" x="411" y="697" text-anchor="middle" font-family="Consolas,Menlo,monospace" font-size="22" fill="#6ef0a0">0.00 A</text>
+  <text x="309" y="726" text-anchor="middle" font-size="12" fill="#9ca3af">Spannung U</text>
+  <text x="411" y="726" text-anchor="middle" font-size="12" fill="#9ca3af">Stromstärke I</text>
+  <text x="360" y="758" text-anchor="middle" font-size="12" fill="#9ca3af">Stromquelle (Netzgerät)</text>
+  <circle id="led" cx="448" cy="750" r="5" fill="#475569"/>
+  <g id="term0"><circle cx="290" cy="650" r="11" fill="#1f3a93" stroke="#fff" stroke-width="2"/><text x="290" y="656" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">−</text></g>
+  <g id="term1"><circle cx="430" cy="650" r="11" fill="#d62839" stroke="#fff" stroke-width="2"/><text x="430" y="656" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">+</text></g>
+
+  <g id="streams"></g>
+
+  <g id="burner" style="display:none">
+    <rect x="-20" y="326" width="40" height="8" rx="3" fill="#334155"/>
+    <rect x="-5" y="272" width="10" height="56" fill="#94a3b8"/>
+    <rect x="-8" y="268" width="16" height="6" rx="2" fill="#64748b"/>
+    <g transform="translate(0,268)">
+      <path id="bf1" fill="#52a7ff" fill-opacity=".85"/>
+      <path id="bf2" fill="#d6ecff"/>
+    </g>
+  </g>
+
+  <g id="tube" style="display:none">
+    <g id="tubeInner">
+      <rect id="tubeFill" x="-10" y="-80" width="20" height="0" fill="#9fb4c8" fill-opacity=".45"/>
+      <path d="M-12 0 L-12 -70 A12 12 0 0 1 12 -70 L12 0" fill="#d9ebf8" fill-opacity=".28" stroke="#5d7389" stroke-width="2.2"/>
+      <rect x="-14" y="-3" width="28" height="4" rx="2" fill="#c3d3e2" stroke="#5d7389" stroke-width="1"/>
+      <rect x="-9" y="-76" width="4" height="60" rx="2" fill="#fff" fill-opacity=".55"/>
+    </g>
+  </g>
+
+  <g id="splint" style="display:none">
+    <rect x="1" y="-2.5" width="152" height="5" rx="2" fill="#dcb888" stroke="#a98456" stroke-width=".7"/>
+    <rect x="0" y="-2.5" width="24" height="5" rx="2" id="splintChar" fill="#3a2a1e"/>
+    <g id="splintFx">
+      <circle id="splintGlow" r="6" cx="0" cy="0" fill="url(#glowGrad)" opacity="0"/>
+      <circle id="splintCore" r="2.2" cx="0" cy="0" fill="#ffd27a" opacity="0"/>
+      <path id="splintFlame" fill="#ffb030" fill-opacity=".92"/>
+      <path id="splintFlame2" fill="#fff0a8"/>
+    </g>
+  </g>
+
+  <g id="smoke"></g>
+  <circle id="flash" r="10" cx="0" cy="0" fill="#fff6c8" opacity="0"/>
+  <circle id="flash2" r="10" cx="0" cy="0" fill="#ffb347" opacity="0"/>
+  <text id="popTxt" x="0" y="0" text-anchor="middle" font-size="30" font-weight="800" fill="#d4570b" stroke="#fff" stroke-width="4" paint-order="stroke" opacity="0">PLOPP!</text>
+  <text id="flareTxt" x="0" y="0" text-anchor="middle" font-size="22" font-weight="800" fill="#d4570b" stroke="#fff" stroke-width="4" paint-order="stroke" opacity="0">Der Span flammt auf!</text>
+</svg>
+<div class="capwrap">
+<div class="caption" id="caption" aria-live="polite"></div>
+<div class="stepbar"><button id="nextBtn" class="primary" hidden>Weiter ▶</button><span class="hint" id="nextHint" hidden>(oder Leertaste)</span></div>
+</div>
+
+<!-- Demo: rechte Spalte -->
+<div class="demoOnly" id="demoSide">
+  <div class="ovl2" id="predictCard" hidden></div>
+  <div class="ovl2" id="hypCard">
+    <b>Vermutungen der Klasse</b>
+    <div class="hint">Abstimmen: pro Handzeichen einmal auf die Antwort klicken. Aufgelöst wird erst nach der Beobachtung.</div>
+    <div id="hypBody"></div>
+  </div>
+  <div class="ovl2" id="measCard" hidden>
+    <b>Messwerte ablesen</b>
+    <table class="meas" style="margin-top:6px"><thead><tr><th>Zeit</th><th>links</th><th>rechts</th></tr></thead><tbody id="dMeasRows"></tbody></table>
+    <div class="hint" id="dMeasLive"></div>
+    <div class="row" style="margin-top:6px"><button id="dMeasAdd" class="primary">Messwert festhalten</button><button id="dMeasClose">Schließen</button></div>
+  </div>
+  <div class="ovl2" id="deutCard" hidden>
+    <div id="dDeutGas"></div>
+    <div class="eq">Wasser → Wasserstoff + Sauerstoff</div>
+    <div class="eq" id="dFormelEq">2 H₂O → 2 H₂ + O₂</div>
+    <div>Volumenverhältnis V(H₂) : V(O₂) = 2 : 1</div>
+    <div style="margin-top:6px"><b>Folgerung:</b> Aus dem Reinstoff Wasser entstehen zwei neue Reinstoffe mit ganz anderen Eigenschaften. Das Wasser wurde nicht nur verdampft, sondern zerlegt.</div>
+    <div class="row" style="margin-top:6px"><button id="dDeutClose">Schließen</button></div>
+  </div>
+</div>
+
+<!-- Demo: Bedienflächen links -->
+<div class="demoBar" id="demoBar">
+  <section class="dsec"><h4>1 · Stromquelle</h4>
+    <label>Flüssigkeit<br><select id="dElec" class="js-elec-sel"></select></label>
+    <button class="js-power primary big"></button>
+    <label>Spannung: <b class="js-uval"></b><input type="range" class="js-u" min="0" max="12" step="0.5" value="10"></label>
+    <div class="seg js-speed"><button data-s="1">×1</button><button data-s="10">×10</button><button data-s="20" class="sel">×20</button><button data-s="50">×50</button></div>
+  </section>
+  <section class="dsec"><h4>2 · Messen</h4><button id="dMeas">Messwerte ablesen</button></section>
+  <section class="dsec"><h4>3 · Gase nachweisen</h4>
+    <div class="row"><label class="opt"><input type="radio" name="armD" value="0" class="js-arm" checked> linker Schenkel</label><label class="opt"><input type="radio" name="armD" value="1" class="js-arm"> rechter</label></div>
+    <button class="js-glim primary">Glimmspanprobe</button><button class="js-knall primary">Knallgasprobe</button>
+  </section>
+  <section class="dsec"><h4>4 · Auflösen</h4><button id="dDeut">Deutung einblenden</button><button id="dProto">Protokoll erzeugen</button></section>
+  <details class="dsec"><summary><b>Einstellungen</b></summary><div class="dsecIn">
+    <label class="opt"><input type="checkbox" id="predictOn" checked> Vermutung vor den Proben</label>
+    <label class="opt"><input type="checkbox" class="js-step" checked> Schritt für Schritt</label>
+    <label class="opt"><input type="checkbox" class="js-sound" checked> Ton</label>
+    <label class="opt"><input type="checkbox" id="dFormel"> Formelgleichung (falls eingeführt)</label>
+    <label class="opt"><input type="checkbox" class="js-real"> reale Messabweichung</label>
+    <button id="dReset">Neu starten</button><button id="dSwap" title="Wasserstoff entsteht im anderen Schenkel">Neu, Polung tauschen</button>
+  </div></details>
+</div>
+</section>
+
+<!-- Schüler-Panel -->
+<aside class="panel studentOnly" id="studentPanel">
+  <div class="card"><div class="nav" id="phaseNav"></div></div>
+
+  <details class="card" id="wortspeicher">
+    <summary>Wortspeicher: Das bedeuten die Wörter</summary>
+    <ul>
+      <li><b>Reinstoff:</b> besteht aus nur einer Sorte Teilchen (z. B. Wasser).</li>
+      <li><b>Stoffgemisch:</b> mehrere Stoffe sind vermischt (z. B. Wasser mit Zusatz).</li>
+      <li><b>Zerlegung:</b> Aus einem Stoff werden mehrere neue Stoffe gemacht.</li>
+      <li><b>Nachweis:</b> ein Test, an dem man einen bestimmten Stoff erkennt.</li>
+      <li><b>Glimmspan:</b> ein Holzspan, dessen Flamme ausgeblasen wurde, sodass er nur noch glüht.</li>
+      <li><b>Knallgasprobe:</b> Wasserstoff-Nachweis mit der Flamme.</li>
+      <li><b>Pluspol / Minuspol:</b> die beiden Anschlüsse der Stromquelle.</li>
+      <li><b>Metallstäbe (Elektroden):</b> hier leitet der Strom ins Wasser hinein und wieder heraus.</li>
+    </ul>
+  </details>
+
+  <!-- Phase 1 -->
+  <section class="card phase" data-p="1">
+    <h2>1 · Auftrag und Vermutung</h2>
+    <p style="margin:0 0 6px"><b>Auftrag:</b> Wasser ist ein Reinstoff. Du untersuchst, was passiert, wenn man elektrischen Strom durch Wasser leitet.</p>
+    <label class="opt"><input type="checkbox" id="stuSafety"> Ich kenne die Sicherheitsregeln: Schutzbrille tragen, die Stromquelle ausschalten, bevor ein Hahn geöffnet wird, und die Flamme weit weg vom ausströmenden Gas halten.</label>
+    <h3>Meine Vermutung: Was passiert mit dem Wasser?</h3>
+    <div id="hypWhat"></div>
+    <h3>Falls neue Stoffe entstehen: Welche könnten es sein? (freiwillig)</h3>
+    <div id="hypGas"></div>
+    <h3>Falls zwei Gase entstehen: Wie viel von jedem? (freiwillig)</h3>
+    <div id="hypRatio"></div>
+    <h3>Meine Begründung (freiwillig)</h3>
+    <textarea id="hypText" placeholder="Warum denkst du das?"></textarea>
+    <div class="gate"><button id="go2" class="primary" disabled>Weiter zum Versuch ▶</button> <span class="hint" id="go2hint"></span></div>
+  </section>
+
+  <!-- Phase 2 -->
+  <section class="card phase" data-p="2" hidden>
+    <h2>2 · Strom durch Wasser leiten</h2>
+    <p style="margin:0 0 6px">Im Gerät ist Wasser mit einem Zusatz (etwas verdünnte Schwefelsäure). Reines Wasser leitet den Strom kaum, deshalb braucht man den Zusatz. Du kannst beides ausprobieren.</p>
+    <h3>Flüssigkeit im Gerät</h3>
+    <div id="elecChoice"></div>
+    <div class="hint">Wechseln geht nur, solange (fast) noch kein Gas entstanden ist. Danach: „Apparatur neu befüllen“.</div>
+    <div class="row" style="margin-top:6px"><button id="refillBtn">Apparatur neu befüllen</button></div>
+    <h3>Stromquelle</h3>
+    <div class="row"><button class="js-power primary big"></button><span class="pill off js-pstate">AUS</span></div>
+    <label style="display:block;margin-top:8px">Stärke der Stromquelle (Spannung): <b class="js-uval"></b>
+    <input type="range" class="js-u" min="0" max="12" step="0.5" value="10"></label>
+    <div class="seg js-speed" style="margin-top:6px"><button data-s="1">×1</button><button data-s="10">×10</button><button data-s="20" class="sel">×20</button><button data-s="50">×50</button></div>
+    <div class="hint">Zeitraffer: In Wirklichkeit dauert es einige Minuten, bis genug Gas entstanden ist.</div>
+    <h3>Messreihe</h3>
+    <table class="meas">
+      <tr><th>Zeit</th><th>Strom</th><th>linker Schenkel</th><th>rechter Schenkel</th></tr>
+      <tr><td id="mTime">00:00</td><td id="mI">0,00 A</td><td id="mV0">0,0 mL</td><td id="mV1">0,0 mL</td></tr>
+    </table>
+    <div class="row" style="margin-top:6px"><button id="addRow" class="primary">Messwert notieren</button><span class="hint">Lies das Gasvolumen an der Skala ab. Notiere mindestens 3 Werte.</span></div>
+    <table class="meas" style="margin-top:6px"><thead><tr><th>Nr.</th><th>Zeit</th><th>links (mL)</th><th>rechts (mL)</th><th></th></tr></thead><tbody id="rowsBody"></tbody></table>
+    <div class="hint" id="ratioHint"></div>
+    <div class="gate"><button id="go3" class="primary" disabled>Weiter zu den Nachweisen ▶</button> <span class="hint" id="go3hint"></span></div>
+  </section>
+
+  <!-- Phase 3 -->
+  <section class="card phase" data-p="3" hidden>
+    <h2>3 · Die Gase erkennen</h2>
+    <div class="card" style="background:#f8fbff;margin-bottom:8px">
+      <b>Nachweis-Steckbriefe</b>
+      <div class="hint" style="margin-top:2px">Ein Nachweis ist ein Test, an dem man einen bestimmten Stoff erkennt. Eine Probe zeigt nur, ob dieses eine Gas vorhanden ist.</div>
+      <ul style="margin:6px 0 0;padding-left:18px;font-size:.95rem">
+        <li><b>Glimmspanprobe → Sauerstoff.</b> Ein glimmender Holzspan flammt in Sauerstoff hell auf.</li>
+        <li><b>Knallgasprobe → Wasserstoff.</b> Das Gas wird in einem Reagenzglas aufgefangen und an die Flamme gehalten. Wasserstoff macht ein dumpfes „Plopp“.</li>
+      </ul>
+    </div>
+    <p style="margin:0 0 6px">Welches Gas ist in welchem Schenkel? Wähle den Schenkel und eine Probe. Zuerst planst du den Ablauf, dann läuft er ab. Danach hältst du Beobachtung und Schluss fest.</p>
+    <div class="row">
+      <span>Gas prüfen aus:</span>
+      <label class="opt"><input type="radio" name="armS" value="0" class="js-arm" checked> linkem Schenkel</label>
+      <label class="opt"><input type="radio" name="armS" value="1" class="js-arm"> rechtem Schenkel</label>
+    </div>
+    <div class="row" style="margin-top:6px">
+      <button class="js-glim primary">Glimmspanprobe</button>
+      <button class="js-knall primary">Knallgasprobe</button>
+    </div>
+    <div class="hint" id="testHint"></div>
+    <div class="row" style="margin-top:8px"><span>Mehr Gas nötig?</span><button class="js-power"></button><span class="pill off js-pstate">AUS</span>
+      <div class="seg js-speed"><button data-s="1">×1</button><button data-s="10">×10</button><button data-s="20" class="sel">×20</button><button data-s="50">×50</button></div></div>
+    <div class="row" style="margin-top:6px">
+      <label class="opt"><input type="checkbox" class="js-step"> Schritt für Schritt</label>
+      <label class="opt"><input type="checkbox" class="js-sound" checked> Ton</label>
+    </div>
+    <div id="orderBox" hidden></div>
+    <div id="obsBox" hidden></div>
+    <h3>Mein Protokoll der Proben</h3>
+    <div id="protoList"></div>
+    <div class="hint">Tipp: Prüfe beide Schenkel mit der passenden Probe. Teste auch den anderen Schenkel zur Kontrolle. Zu wenig Gas? Schalte oben die Stromquelle wieder ein.</div>
+    <div class="gate"><button id="go4" class="primary" disabled>Weiter zur Auswertung ▶</button> <span class="hint" id="go4hint"></span></div>
+  </section>
+
+  <section class="card" id="kurzDone" hidden>
+    <h2>✓ Versuch geschafft</h2>
+    <p style="margin:0">Du hast beide Gase nachgewiesen. Gehe jetzt zurück zur Lernseite (Schließen oben) und werte deine Messwerte aus.</p>
+  </section>
+
+  <!-- Phase 4 -->
+  <section class="card phase" data-p="4" hidden>
+    <h2>4 · Auswertung</h2>
+    <p style="margin:0 0 8px">Ergänze die Sätze.</p>
+    <div>Aus dem Reinstoff Wasser entstehen die beiden Gase <select id="evA"></select> und <select id="evB"></select>.</div>
+    <div style="margin-top:6px">Das Gasvolumen von Wasserstoff und Sauerstoff verhält sich ungefähr wie <select id="evRatio"></select> (Wasserstoff : Sauerstoff).</div>
+    <div style="margin-top:6px">Das Wasser wurde nicht nur verdampft, sondern <select id="evClass"></select>.</div>
+    <div style="margin-top:6px">Wasser ist ein <select id="evPure"></select>. Die Flüssigkeit im Gerät (Wasser mit Zusatz) ist ein <select id="evMix"></select>.</div>
+    <h3>Meine Vermutung aus Phase 1 war</h3>
+    <div id="evVerdict"></div>
+    <h3>Bemerkungen (freiwillig)</h3>
+    <textarea id="evRefl" placeholder="Das Verhältnis ist nicht ganz genau 2 : 1. Was könnte der Grund sein?"></textarea>
+    <div class="gate"><button id="evCheck" class="primary">Prüfen</button></div>
+    <div id="evMsg"></div>
+    <div class="gate"><button id="go5" class="primary" disabled>Weiter zum Protokoll ▶</button></div>
+  </section>
+
+  <!-- Phase 5 -->
+  <section class="card phase" data-p="5" hidden>
+    <h2>5 · Protokoll</h2>
+    <p style="margin:0 0 8px">Alles ist geschafft. Aus deinen Eingaben wird jetzt dein Protokoll mit Messreihe, Diagramm, Beobachtungen und Auswertung erstellt.</p>
+    <div class="row"><label>Name <input type="text" id="stuName" style="width:200px"></label><label>Klasse <input type="text" id="stuKlasse" style="width:90px"></label></div>
+    <div class="gate"><button id="makeProto" class="primary big">Protokoll erstellen</button></div>
+    <div class="hint">Im Protokoll kannst du drucken (auch als PDF speichern) oder eine HTML-Datei herunterladen.</div>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>Hinweise für die Lehrkraft</summary>
+      <ul>
+        <li>Die Seite nicht neu laden: Eingaben und Messwerte gehen dabei verloren.</li>
+        <li>Der Schüler-Modus führt in fünf Phasen: Vermutung, Elektrolyse, Nachweise, Auswertung, Protokoll. Jede Phase schaltet die nächste frei.</li>
+        <li>Die Polung (welcher Schenkel Wasserstoff enthält) ist an das Neustarten gekoppelt: Mit „Neu starten (andere Polung)“ ändert sie sich.</li>
+        <li>Realistische Messabweichung: Es entsteht ca. 3 % weniger Sauerstoff als idealerweise (bessere Löslichkeit in Wasser). Messwerte werden auf 0,5 mL gerundet.</li>
+        <li>Beim echten Versuch: Schutzbrille, nur kleine Gasmengen in ein Reagenzglas, Brenner nicht in der Nähe der Apparatur, Hahn erst nach Abschalten der Spannung öffnen.</li>
+        <li>Spannungs- und Zeitwerte sind ein vereinfachtes Modell (R ≈ 12 Ω, Zersetzungsspannung ≈ 1,7 V).</li>
+      </ul>
+      <div class="row" style="margin-top:8px">
+        <label class="opt"><input type="checkbox" id="freeMode"> Alle Phasen freischalten (Lehrkraft)</label>
+        <label class="opt"><input type="checkbox" class="js-real" checked> reale Messabweichung</label>
+      </div>
+      <div class="row" style="margin-top:6px"><button id="sReset">Neu starten</button><button id="sSwap">Neu starten (andere Polung)</button></div>
+    </details>
+  </section>
+</aside>
+</div>
+</div>
+
+<div id="protoModal" hidden>
+  <div class="protoTools">
+    <button class="primary" id="prPrint">Drucken / als PDF speichern</button>
+    <button id="prDownload">Als HTML-Datei herunterladen</button>
+    <button id="prClose">Schließen</button>
+  </div>
+  <div class="pr" id="protoBody"></div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+const NS = 'http://www.w3.org/2000/svg';
+const ARMX = [190, 530], Y0 = 118, PXML = 6.4, VMAX = 50, MINV = 4;
+const GAS = { H2: { sym: 'H₂', name: 'Wasserstoff' }, O2: { sym: 'O₂', name: 'Sauerstoff' } };
+const ELEC = {
+  h2so4: { name: 'Wasser mit Zusatz (etwas verdünnte Schwefelsäure)', short: 'Wasser + Zusatz', f: 1 },
+  dest: { name: 'reines Wasser (ohne Zusatz)', short: 'reines Wasser', f: .01 }
+};
+const rand = (a, b) => a + Math.random() * (b - a);
+const lerp = (a, b, p) => a + (b - a) * p;
+const easeIO = p => p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+const linear = p => p;
+const dirOf = a => a === 0 ? -1 : 1;
+const burnerX = a => a === 0 ? 62 : 698;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const shuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const fmt = (x, d = 1) => x.toFixed(d).replace('.', ',');
+const reading = v => Math.round(v * 2) / 2;
+
+const freshStu = () => ({ safety: false, hypWhat: '', hypGas: [], hypRatio: '', hypText: '', name: '', klasse: '', evalOk: false, verdict: '', refl: '', attempts: 0 });
+const state = {
+  mode: 'student', powerOn: false, U: 10, speed: 20,
+  V: [0, 0], produced: [0, 0], open: [false, false], flow: [false, false],
+  t: 0, revealed: false, known: [false, false], gasOf: ['H2', 'O2'],
+  busy: false, protocol: [], rows: [], electrolyte: null, real: true,
+  identified: { H2: false, O2: false }, phase: 1, maxPhase: 1, free: false,
+  arm: 0, stu: freshStu(), pending: null, hyp: null
+};
+const polOf = a => state.gasOf[a] === 'H2' ? 'minus' : 'plus';
+const armName = a => (a === 0 ? 'linker' : 'rechter') + ' Schenkel (' + (polOf(a) === 'minus' ? 'Minuspol' : 'Pluspol') + ')';
+
+/* ---------- Skala ---------- */
+(function buildScale() {
+  const g = $('scale');
+  for (let k = 0; k <= 10; k++) {
+    const y = Y0 + k * 5 * PXML, major = k % 2 === 0, len = major ? 11 : 6;
+    for (const [x1, x2] of [[162 - len, 162], [558, 558 + len]]) {
+      const l = document.createElementNS(NS, 'line');
+      l.setAttribute('x1', x1); l.setAttribute('x2', x2); l.setAttribute('y1', y); l.setAttribute('y2', y);
+      l.setAttribute('stroke-width', 1.5); g.appendChild(l);
+    }
+    if (major) {
+      const tl = document.createElementNS(NS, 'text');
+      tl.setAttribute('x', 148); tl.setAttribute('y', y + 4.5); tl.setAttribute('text-anchor', 'end');
+      tl.setAttribute('stroke', 'none'); tl.textContent = k * 5; g.appendChild(tl);
+      const tr = document.createElementNS(NS, 'text');
+      tr.setAttribute('x', 572); tr.setAttribute('y', y + 4.5);
+      tr.setAttribute('stroke', 'none'); tr.textContent = k * 5; g.appendChild(tr);
+    }
+  }
+})();
+
+function applyPolarity() {
+  for (let a = 0; a < 2; a++) {
+    const minus = polOf(a) === 'minus';
+    const col = minus ? '#1f3a93' : '#d62839';
+    const sign = minus ? '−' : '+';
+    $('wire' + a).setAttribute('stroke', col);
+    $('badge' + a).firstElementChild.setAttribute('fill', col);
+    $('badge' + a).lastElementChild.textContent = sign;
+    $('term' + a).firstElementChild.setAttribute('fill', col);
+    $('term' + a).lastElementChild.textContent = sign;
+    const pn = $('poleName' + a);
+    pn.textContent = minus ? 'Minuspol (−)' : 'Pluspol (+)';
+    pn.setAttribute('fill', col);
+  }
+}
+
+/* ---------- Hähne ---------- */
+const handleAngle = [0, 0];
+function applyHandle(a) { $('hnd' + a).setAttribute('transform', `translate(${ARMX[a]},88) rotate(${handleAngle[a]})`); }
+async function setHandle(a, open, ms = 380) {
+  const from = handleAngle[a], to = open ? 90 : 0;
+  await anim(ms, p => { handleAngle[a] = lerp(from, to, p); applyHandle(a); });
+  state.open[a] = open;
+}
+
+/* ---------- Animations-Helfer ---------- */
+class Abort extends Error {}
+let runToken = 0;
+function sleep(ms) {
+  const tk = runToken;
+  return new Promise((res, rej) => setTimeout(() => tk === runToken ? res() : rej(new Abort()), ms));
+}
+function anim(ms, fn, ease = easeIO) {
+  const tk = runToken;
+  return new Promise((res, rej) => {
+    const t0 = performance.now();
+    function f(now) {
+      if (tk !== runToken) return rej(new Abort());
+      const p = Math.min(1, (now - t0) / ms);
+      fn(ease(p));
+      if (p < 1) requestAnimationFrame(f); else res();
+    }
+    requestAnimationFrame(f);
+  });
+}
+
+/* ---------- Beschriftung / Schritte ---------- */
+const nextBtn = $('nextBtn');
+let nextResolve = null;
+function setCaption(text, cls) { const c = $('caption'); c.textContent = text; c.className = 'caption' + (cls ? ' ' + cls : ''); }
+function userNext(label) {
+  const tk = runToken;
+  return new Promise((res, rej) => {
+    nextResolve = () => { nextResolve = null; tk === runToken ? res() : rej(new Abort()); };
+    nextBtn.textContent = label || 'Weiter ▶';
+    nextBtn.hidden = false; $('nextHint').hidden = false; nextBtn.focus({ preventScroll: true });
+  });
+}
+nextBtn.addEventListener('click', () => { nextBtn.hidden = true; $('nextHint').hidden = true; if (nextResolve) nextResolve(); });
+window.addEventListener('keydown', e => {
+  if (nextBtn.hidden) return;
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || ''))) return;
+  if (e.key === ' ' || e.key === 'ArrowRight') { e.preventDefault(); nextBtn.click(); }
+});
+const stepOn = () => $$('.js-step').some(c => c.checked);
+async function step(text, fn, auto = false) {
+  setCaption(text);
+  if (!auto && stepOn()) await userNext(); else await sleep(auto ? 600 : 900);
+  await fn();
+}
+
+/* ---------- Vermutungen (Demo): erst abstimmen, nach der Beobachtung auflösen ---------- */
+function drawPredict(h, mode) {
+  const card = $('predictCard'); card.hidden = false; card.innerHTML = ''; $('demoSide').scrollTop = 0;
+  const t = document.createElement('h3'); t.textContent = 'Vermutung: ' + h.q; card.appendChild(t);
+  h.options.forEach((o, i) => {
+    const b = document.createElement('button');
+    b.className = 'opt-btn' + (mode === true ? (i === h.correct ? ' right' : ' wrong') : '');
+    const n = h.counts[i];
+    b.innerHTML = `<span>${esc(o)}</span><b>${n ? '✋'.repeat(Math.min(n, 5)) + (n > 5 ? '+' : '') : ''}</b>`;
+    if (mode === false) b.addEventListener('click', () => { h.counts[i]++; drawPredict(h, false); });
+    else b.style.pointerEvents = 'none';
+    card.appendChild(b);
+  });
+  const n = document.createElement('div'); n.className = 'hint';
+  n.textContent = mode === false ? 'Klasse abstimmen lassen: pro Handzeichen einmal auf die Antwort klicken. Aufgelöst wird erst nach der Beobachtung.' : mode === 'mini' ? 'Jetzt genau beobachten. Aufgelöst wird gleich danach.' : 'Aufgelöst: So war es.';
+  card.appendChild(n);
+}
+async function askPredict(q, options, correct) {
+  if (state.mode !== 'demo' || !$('predictOn').checked) return null;
+  const h = { q, options, correct, counts: options.map(() => 0) };
+  drawPredict(h, false);
+  setCaption('Was erwartet ihr? Stimmt ab, bevor ihr den Versuch seht.');
+  await userNext('Weiter: beobachten ▶');
+  drawPredict(h, 'mini');
+  return h;
+}
+async function resolvePredict(h) {
+  if (!h) return;
+  drawPredict(h, true);
+  await userNext('Weiter ▶');
+  $('predictCard').hidden = true;
+}
+const HYP = [
+  { id: 'what', q: 'Was passiert mit dem Wasser?', opts: ['Nichts: Das Wasser bleibt Wasser.', 'Das Wasser verdampft.', 'Aus dem Wasser entstehen neue Stoffe.', 'Das weiß ich nicht.'], correct: [2],
+    ready: () => state.V[0] + state.V[1] >= 4, need: 'Erst beobachten: Stromquelle einschalten, bis in beiden Schenkeln Gas entstanden ist.',
+    note: () => 'Es entstehen Gase an den Metallstäben: Aus dem Wasser sind neue Stoffe geworden.' },
+  { id: 'gas', q: 'Welche Stoffe entstehen? (mehrere möglich)', opts: ['Wasserstoff', 'Sauerstoff', 'Stickstoff', 'Kohlenstoffdioxid', 'Das weiß ich nicht'], correct: [0, 1],
+    ready: () => state.identified.H2 && state.identified.O2, need: 'Erst beobachten: Beide Gase mit den Nachweisproben untersuchen.',
+    note: () => 'Nachgewiesen wurden Wasserstoff und Sauerstoff.' },
+  { id: 'ratio', q: 'Wie viel von jedem Gas?', opts: ['Beide Gase gleich viel', 'Ein Gas doppelt so viel wie das andere', 'Ein Gas dreimal so viel wie das andere', 'Das weiß ich nicht'], correct: [1],
+    ready: () => state.rows.length >= 1, need: 'Erst beobachten: Messwerte ablesen und festhalten.',
+    note: () => { const r = state.rows[state.rows.length - 1]; return r && r.v0 > 0 && r.v1 > 0 ? `Gemessen: ${fmt(Math.max(r.v0, r.v1) / Math.min(r.v0, r.v1), 1)} : 1, also etwa doppelt so viel Wasserstoff wie Sauerstoff.` : 'Etwa doppelt so viel Wasserstoff wie Sauerstoff.'; } }
+];
+const freshHyp = () => ({ votes: Object.fromEntries(HYP.map(q => [q.id, q.opts.map(() => 0)])), resolved: {} });
+function renderHyp() {
+  const box = $('hypBody'); if (!box || !state.hyp) return; box.innerHTML = '';
+  HYP.forEach(q => {
+    const res = !!state.hyp.resolved[q.id];
+    const w = document.createElement('div'); w.className = 'hq';
+    const h4 = document.createElement('h4'); h4.textContent = q.q; w.appendChild(h4);
+    const total = state.hyp.votes[q.id].reduce((x, y) => x + y, 0), okv = q.correct.reduce((x, i) => x + state.hyp.votes[q.id][i], 0);
+    q.opts.forEach((o, i) => {
+      if (res && !q.correct.includes(i)) return;
+      const b = document.createElement('button'); const n = state.hyp.votes[q.id][i];
+      b.className = 'hopt' + (res ? (q.correct.includes(i) ? ' right' : ' wrong') : '');
+      b.innerHTML = `<span>${esc(o)}</span><b>${n ? '✋'.repeat(Math.min(n, 5)) + (n > 5 ? '+' : '') : ''}</b>`;
+      if (res) b.style.pointerEvents = 'none';
+      else b.addEventListener('click', () => { state.hyp.votes[q.id][i]++; renderHyp(); });
+      w.appendChild(b);
+    });
+    const need = document.createElement('div'); need.className = 'hneed'; need.dataset.hneed = q.id; w.appendChild(need);
+    if (res) { const nt = document.createElement('div'); nt.className = 'hnote'; nt.textContent = (total ? `Stimmen: ${okv} von ${total} richtig. ` : '') + q.note(); w.appendChild(nt); }
+    else {
+      const rb = document.createElement('button'); rb.className = 'hres primary'; rb.dataset.hres = q.id; rb.textContent = 'Auflösen';
+      rb.addEventListener('click', () => { state.hyp.resolved[q.id] = true; renderHyp(); setCaption('Aufgelöst: ' + q.note(), 'result'); });
+      w.appendChild(rb);
+    }
+    box.appendChild(w);
+  });
+  updateHypButtons();
+}
+function updateHypButtons() {
+  if (!state.hyp) return;
+  HYP.forEach(q => {
+    const b = document.querySelector(`[data-hres="${q.id}"]`), n = document.querySelector(`[data-hneed="${q.id}"]`);
+    if (!b) return;
+    const ok = q.ready(); b.disabled = !ok; b.title = ok ? '' : q.need;
+    if (n) n.textContent = ok ? '' : q.need;
+  });
+}
+
+/* ---------- Requisiten ---------- */
+const sp = { show: false, x: 0, y: 0, a: 150, glow: 0, flame: 0, smoke: 0 };
+const burner = { show: false, x: 62, flame: 0 };
+const tubeP = { show: false, x: 0, y: 0, phi: 0, fill: 0 };
+function flamePath(h, w, f) {
+  if (h <= 0.5) return '';
+  return `M ${-w} 0 C ${-w} ${-h * .45}, ${-w * .35 + f} ${-h * .72}, ${f} ${-h} C ${w * .35 + f} ${-h * .72}, ${w} ${-h * .45}, ${w} 0 Z`;
+}
+
+/* ---------- Simulation ---------- */
+const elecF = () => state.electrolyte ? ELEC[state.electrolyte].f : 0;
+function fullH2() { return state.V[state.gasOf.indexOf('H2')] >= VMAX - 0.05; }
+function current() {
+  if (!state.powerOn || fullH2()) return 0;
+  return Math.max(0, elecF() * (state.U - 1.7) / 12);
+}
+function simulate(dt) {
+  const I = current();
+  if (I <= 0) return;
+  state.t += dt * state.speed;
+  const h = state.gasOf.indexOf('H2'), o = 1 - h;
+  let dH = 0.1244 * I * dt * state.speed;
+  dH = Math.min(dH, VMAX - state.V[h], (VMAX - state.V[o]) * 2);
+  if (dH <= 0) return;
+  const dO = dH / 2 * (state.real ? 0.97 : 1);
+  state.V[h] += dH; state.V[o] += dO;
+  state.produced[h] += dH; state.produced[o] += dO;
+}
+
+/* Blasen */
+const bubbleLayer = $('bubbles'); const bubbles = []; const acc = [0, 0];
+function ySurf(a) { return Y0 + state.V[a] * PXML; }
+function updBubbles(dt) {
+  const I = current();
+  const visI = Math.max(I, I > 0 ? 0.03 : 0);
+  for (let a = 0; a < 2; a++) {
+    acc[a] += visI * 13 * (state.gasOf[a] === 'H2' ? 2 : 1) * dt;
+    while (acc[a] >= 1 && bubbles.length < 400) {
+      acc[a] -= 1;
+      const el = document.createElementNS(NS, 'circle');
+      el.setAttribute('fill', 'rgba(255,255,255,.8)'); el.setAttribute('stroke', '#6fa9cf'); el.setAttribute('stroke-width', '.7');
+      bubbleLayer.appendChild(el);
+      bubbles.push({ a, x: ARMX[a] + rand(-7, 7), y: rand(452, 506), r: rand(1.4, 3.2), vy: rand(55, 105), ph: rand(0, 6.28), el });
+    }
+    if (I <= 0) acc[a] = 0;
+  }
+  for (let i = bubbles.length - 1; i >= 0; i--) {
+    const b = bubbles[i];
+    b.y -= b.vy * dt; b.ph += dt * 6;
+    if (b.y < ySurf(b.a) + 1) { b.el.remove(); bubbles.splice(i, 1); continue; }
+    b.el.setAttribute('cx', b.x + Math.sin(b.ph) * 2.2); b.el.setAttribute('cy', b.y); b.el.setAttribute('r', b.r);
+  }
+}
+function clearBubbles() { bubbles.forEach(b => b.el.remove()); bubbles.length = 0; acc[0] = acc[1] = 0; }
+
+/* Gasstrom */
+const streamP = [[], []];
+(function () {
+  for (let a = 0; a < 2; a++) for (let i = 0; i < 16; i++) {
+    const el = document.createElementNS(NS, 'circle');
+    el.setAttribute('r', 2.2); el.setAttribute('fill', '#8aa4bd'); el.setAttribute('opacity', 0);
+    $('streams').appendChild(el);
+    streamP[a].push({ el, t: Math.random(), dx: rand(-3, 3), on: false });
+  }
+})();
+function updStreams(dt) {
+  for (let a = 0; a < 2; a++) for (const p of streamP[a]) {
+    p.t += dt * 1.2;
+    if (p.t >= 1) { p.t = 0; p.dx = rand(-4, 4); p.on = state.flow[a]; }
+    if (!p.on) { p.el.setAttribute('opacity', 0); continue; }
+    p.el.setAttribute('cx', ARMX[a] + p.dx * (0.4 + p.t));
+    p.el.setAttribute('cy', 60 - p.t * 46);
+    p.el.setAttribute('opacity', (1 - p.t) * .7);
+  }
+}
+
+/* Rauch */
+const smokeLayer = $('smoke'); const smokes = []; let smokeAcc = 0;
+function updSmoke(dt) {
+  if (sp.show && sp.smoke > 0) {
+    smokeAcc += dt * 22 * sp.smoke;
+    while (smokeAcc >= 1) {
+      smokeAcc -= 1;
+      const el = document.createElementNS(NS, 'circle');
+      el.setAttribute('fill', '#9aa3ad'); smokeLayer.appendChild(el);
+      smokes.push({ el, x: sp.x + rand(-2, 2), y: sp.y - 3, age: 0, dx: rand(-8, 8) });
+    }
+  }
+  for (let i = smokes.length - 1; i >= 0; i--) {
+    const s = smokes[i]; s.age += dt;
+    if (s.age > 1.8) { s.el.remove(); smokes.splice(i, 1); continue; }
+    const k = s.age / 1.8;
+    s.y -= 34 * dt; s.x += s.dx * dt;
+    s.el.setAttribute('cx', s.x); s.el.setAttribute('cy', s.y);
+    s.el.setAttribute('r', 2 + k * 8); s.el.setAttribute('opacity', (1 - k) * .45);
+  }
+}
+function clearSmoke() { smokes.forEach(s => s.el.remove()); smokes.length = 0; }
+
+/* ---------- Zeichnen ---------- */
+function render() {
+  const yL = ySurf(0), yR = ySurf(1), yC = 96 - 0.25 * (state.V[0] + state.V[1]);
+  $('liq0').setAttribute('y', yL); $('liq0').setAttribute('height', 546 - yL);
+  $('liq1').setAttribute('y', yR); $('liq1').setAttribute('height', 546 - yR);
+  $('liqC').setAttribute('y', yC); $('liqC').setAttribute('height', 546 - yC);
+  [['surf0', yL], ['surf1', yR], ['surfC', yC]].forEach(([id, y]) => { $(id).setAttribute('y1', y); $(id).setAttribute('y2', y); });
+  for (let a = 0; a < 2; a++) {
+    const t = $('gasLbl' + a);
+    if (state.V[a] > 3) {
+      t.setAttribute('visibility', 'visible');
+      t.setAttribute('y', Y0 + state.V[a] * PXML / 2 + 7);
+      t.textContent = (state.revealed || state.known[a]) ? GAS[state.gasOf[a]].sym : '?';
+    } else t.setAttribute('visibility', 'hidden');
+  }
+  const I = current();
+  $('dispU').textContent = (state.powerOn ? state.U : 0).toFixed(1) + ' V';
+  $('dispI').textContent = I.toFixed(2) + ' A';
+  $('led').setAttribute('fill', state.powerOn ? '#4ade80' : '#475569');
+  $('elecLbl').textContent = state.electrolyte ? ELEC[state.electrolyte].short : 'Flüssigkeit?';
+
+  const bg = $('burner');
+  if (burner.show) {
+    bg.style.display = ''; bg.setAttribute('transform', `translate(${burner.x},0)`);
+    const f = burner.flame, fl = (Math.random() - .5) * 2.2;
+    $('bf1').setAttribute('d', flamePath(46 * f, 9, fl));
+    $('bf2').setAttribute('d', flamePath(28 * f, 4.5, fl * .5));
+  } else bg.style.display = 'none';
+
+  const sg = $('splint');
+  if (sp.show) {
+    sg.style.display = '';
+    sg.setAttribute('transform', `translate(${sp.x},${sp.y}) rotate(${-sp.a})`);
+    $('splintFx').setAttribute('transform', `rotate(${sp.a})`);
+    const g = sp.glow, fl = (Math.random() - .5) * 3;
+    $('splintGlow').setAttribute('opacity', Math.min(1, g)); $('splintGlow').setAttribute('r', 4 + 5 * g + Math.random());
+    $('splintCore').setAttribute('opacity', Math.min(1, g));
+    $('splintFlame').setAttribute('d', flamePath(16 * sp.flame, 3 + 2.2 * sp.flame, fl));
+    $('splintFlame2').setAttribute('d', flamePath(9 * sp.flame, 1.6 + 1.1 * sp.flame, fl * .5));
+  } else sg.style.display = 'none';
+
+  const tg = $('tube');
+  if (tubeP.show) {
+    tg.style.display = '';
+    $('tubeInner').setAttribute('transform', `translate(${tubeP.x},${tubeP.y}) rotate(${tubeP.phi})`);
+    $('tubeFill').setAttribute('height', 72 * tubeP.fill);
+  } else tg.style.display = 'none';
+}
+
+/* ---------- Ton ---------- */
+let actx = null;
+function audio() {
+  if (!$$('.js-sound').some(c => c.checked)) return null;
+  if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+function noiseBuf(a, dur) {
+  const n = Math.floor(a.sampleRate * dur), b = a.createBuffer(1, n, a.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; return b;
+}
+function popSound() {
+  const a = audio(); if (!a) return; const t = a.currentTime;
+  const src = a.createBufferSource(); src.buffer = noiseBuf(a, .3);
+  const g = a.createGain(); g.gain.setValueAtTime(.9, t); g.gain.exponentialRampToValueAtTime(.001, t + .2);
+  const f = a.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1600;
+  src.connect(f).connect(g).connect(a.destination); src.start(t);
+  const o = a.createOscillator(); o.type = 'sine';
+  o.frequency.setValueAtTime(190, t); o.frequency.exponentialRampToValueAtTime(45, t + .16);
+  const g2 = a.createGain(); g2.gain.setValueAtTime(.9, t); g2.gain.exponentialRampToValueAtTime(.001, t + .24);
+  o.connect(g2).connect(a.destination); o.start(t); o.stop(t + .26);
+}
+function flareSound() {
+  const a = audio(); if (!a) return; const t = a.currentTime;
+  const src = a.createBufferSource(); src.buffer = noiseBuf(a, 1.2);
+  const f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1100; f.Q.value = .7;
+  const g = a.createGain(); g.gain.setValueAtTime(.001, t); g.gain.exponentialRampToValueAtTime(.22, t + .12); g.gain.exponentialRampToValueAtTime(.001, t + 1.1);
+  src.connect(f).connect(g).connect(a.destination); src.start(t);
+}
+
+/* ---------- Gas ablassen ---------- */
+async function drain(a, mL, ms, stream = true) {
+  const v0 = state.V[a], take = Math.min(mL, v0);
+  state.flow[a] = stream;
+  await anim(ms, p => { state.V[a] = v0 - take * p; }, linear);
+  state.flow[a] = false;
+  return take;
+}
+
+/* ---------- Ergebnisse der Proben ---------- */
+const TESTNAME = { glim: 'Glimmspanprobe', knall: 'Knallgasprobe', kalk: 'Kalkwasserprobe', ind: 'Prüfung mit Indikatorpapier' };
+const OUT = {
+  'glim:O2': { obs: 'Der Glimmspan flammt hell auf.', obsWrong: ['Der Glimmspan erlischt.', 'Der Glimmspan glimmt unverändert weiter.'],
+    deut: 'Der Glimmspan flammt auf → Sauerstoff nachgewiesen.', deutWrong: ['Das Gas ist Wasserstoff.', 'Aus dieser Probe lässt sich nichts schließen.'], id: 'O2' },
+  'glim:H2': { obs: 'Der Glimmspan erlischt.', obsWrong: ['Der Glimmspan flammt hell auf.', 'Der Glimmspan glimmt unverändert weiter.'],
+    deut: 'Der Glimmspan erlischt → In diesem Gas ist kein Sauerstoff. (Welches Gas es ist, zeigt diese Probe nicht.)', deutWrong: ['Sauerstoff nachgewiesen.', 'Wasserstoff nachgewiesen, weil der Span erlischt.'], id: null },
+  'knall:H2': { obs: 'Es macht ein dumpfes „Plopp“.', obsWrong: ['Die Flamme brennt heller, es gibt keinen Knall.', 'Es passiert nichts.'],
+    deut: 'Es macht „Plopp“ → Wasserstoff nachgewiesen.', deutWrong: ['Sauerstoff nachgewiesen.', 'Im Reagenzglas war nur Luft.'], id: 'H2' },
+  'knall:O2': { obs: 'Kein „Plopp“; die Flamme brennt nur etwas heller.', obsWrong: ['Es macht ein dumpfes „Plopp“.', 'Die Flamme erlischt.'],
+    deut: 'Kein „Plopp“ → In diesem Gas ist kein Wasserstoff.', deutWrong: ['Wasserstoff nachgewiesen.', 'Das Reagenzglas war leer.'], id: null }
+};
+const outcomeOf = (key, gas) => OUT[key + ':' + gas] || OUT[key + ':*'];
+
+/* ---------- Protokoll-Einträge ---------- */
+function commitEntry(info, obsText) {
+  const o = outcomeOf(info.key, info.gas);
+  state.protocol.push({ key: info.key, test: TESTNAME[info.key], arm: info.arm, obs: obsText, deut: o.deut });
+  if (o.id) {
+    state.identified[o.id] = true;
+    if (state.gasOf[info.arm] === o.id) state.known[info.arm] = true;
+  }
+  renderProtoList();
+}
+function finishTest(info) {
+  const o = outcomeOf(info.key, info.gas);
+  if (state.mode === 'demo') { commitEntry(info, o.obs); setCaption(`Beobachtung (${armName(info.arm)}): ${o.obs}`, 'result'); return; }
+  state.pending = { ...info, stage: 'obs', msg: '' };
+  setCaption(`${TESTNAME[info.key]} durchgeführt. Halte jetzt deine Beobachtung fest.`, 'result');
+  renderObs();
+  $('obsBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function renderObs() {
+  const box = $('obsBox'), p = state.pending;
+  if (!p) { box.hidden = true; box.innerHTML = ''; return; }
+  const o = outcomeOf(p.key, p.gas);
+  box.hidden = false;
+  if (!p.optsObs) { p.optsObs = shuffle([o.obs, ...o.obsWrong]); p.optsDeut = shuffle([o.deut, ...o.deutWrong]); }
+  let html = `<div class="card" style="background:#f8fbff;margin-top:8px"><b>${esc(TESTNAME[p.key])} am ${esc(armName(p.arm))}</b>`;
+  html += `<h3>Was hast du beobachtet?</h3>`;
+  p.optsObs.forEach((t, i) => { html += `<label class="opt"><input type="radio" name="obsR" value="${i}" ${p.stage !== 'obs' ? 'disabled' : ''} ${p.stage !== 'obs' && t === o.obs ? 'checked' : ''}> ${esc(t)}</label>`; });
+  if (p.stage === 'deut') {
+    html += `<h3>Was folgt daraus?</h3>`;
+    p.optsDeut.forEach((t, i) => { html += `<label class="opt"><input type="radio" name="deutR" value="${i}"> ${esc(t)}</label>`; });
+  }
+  if (p.msg) html += `<div class="msg ${p.msgCls || 'info'}">${esc(p.msg)}</div>`;
+  html += `</div>`;
+  box.innerHTML = html;
+  box.querySelectorAll('input[name=obsR]').forEach(r => r.addEventListener('change', () => {
+    const t = p.optsObs[+r.value];
+    if (t === o.obs) { p.stage = 'deut'; p.msg = 'Richtig beobachtet. Jetzt der Schluss daraus.'; p.msgCls = 'ok'; }
+    else { p.msg = 'Das passt nicht zu dem, was in der Animation passiert ist. Überlege noch einmal.'; p.msgCls = 'bad'; state.stu.attempts++; }
+    renderObs();
+  }));
+  box.querySelectorAll('input[name=deutR]').forEach(r => r.addEventListener('change', () => {
+    const t = p.optsDeut[+r.value];
+    if (t === o.deut) {
+      commitEntry(p, o.obs); state.pending = null;
+      setCaption('Eintrag ins Protokoll übernommen: ' + o.deut, 'result');
+      renderObs(); updateAll();
+    } else { p.msg = 'Überlege: Was lässt sich aus genau dieser Probe sicher folgern?'; p.msgCls = 'bad'; state.stu.attempts++; renderObs(); }
+  }));
+}
+function renderProtoList() {
+  const div = $('protoList'); div.innerHTML = '';
+  if (!state.protocol.length) { div.innerHTML = '<div class="hint">Noch keine Probe im Protokoll.</div>'; return; }
+  state.protocol.forEach((e, i) => {
+    const d = document.createElement('div'); d.className = 'protoItem';
+    d.innerHTML = `<b>${i + 1}. ${esc(e.test)}</b> (${esc(armName(e.arm))}): ${esc(e.obs)}<span class="deut">→ ${esc(e.deut)}</span>`;
+    div.appendChild(d);
+  });
+}
+
+/* ---------- Handlungsreihenfolge (Schüler) ---------- */
+function orderChallenge(title, steps, wrongs, info) {
+  return new Promise(res => {
+    const box = $('orderBox'); let idx = 0;
+    const cards = shuffle([...steps.map((t, i) => ({ t, i })), ...wrongs.map(w => ({ t: w.t, wrong: true, why: w.why }))]);
+    const done = new Set(); let msg = '', cls = 'info';
+    const draw = () => {
+      box.hidden = false; box.innerHTML = '';
+      const wrap = document.createElement('div'); wrap.className = 'card'; wrap.style.cssText = 'background:#fffbea;margin-top:8px';
+      wrap.innerHTML = `<b>${esc(title)}</b><div class="hint">${info ? esc(info) + '<br>' : ''}Klicke die Handlungen in der richtigen Reihenfolge an. Achtung: Nicht alle Karten gehören zum Ablauf. Fertig: ${idx}/${steps.length}</div>`;
+      const list = document.createElement('div'); list.className = 'ordercards';
+      cards.forEach(c => {
+        const b = document.createElement('button');
+        const isDone = !c.wrong && done.has(c.i);
+        b.textContent = (isDone ? '✓ ' : '') + c.t; b.className = isDone ? 'done' : ''; b.disabled = isDone;
+        b.addEventListener('click', () => {
+          if (c.wrong) { msg = c.why; cls = 'bad'; state.stu.attempts++; }
+          else if (c.i === idx) { done.add(c.i); idx++; msg = idx < steps.length ? 'Richtig. Was kommt als Nächstes?' : 'Alles richtig. Der Ablauf startet.'; cls = 'ok'; }
+          else { msg = c.i < idx ? '' : 'Dieser Schritt kommt erst später. Überlege, was zuerst nötig ist (Sicherheit zuerst).'; cls = 'bad'; if (c.i > idx) state.stu.attempts++; }
+          draw();
+          if (idx === steps.length) setTimeout(() => { box.hidden = true; box.innerHTML = ''; res(); }, 900);
+        });
+        list.appendChild(b);
+      });
+      wrap.appendChild(list);
+      if (msg) { const m = document.createElement('div'); m.className = 'msg ' + cls; m.textContent = msg; wrap.appendChild(m); }
+      box.appendChild(wrap);
+    };
+    draw(); box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    setCaption('Plane den Versuch: Bringe die Handlungsschritte in die richtige Reihenfolge.');
+  });
+}
+
+/* ---------- Proben-Abläufe ---------- */
+function beginTest() { state.busy = true; }
+function endTest() { state.busy = false; updateAll(); }
+
+async function collectGas(arm, N, firstNo) {
+  const cx = ARMX[arm], dir = dirOf(arm);
+  await step(`Schritt ${firstNo}/${N}: Ein Reagenzglas wird mit der Öffnung nach unten über die Hahnöffnung gehalten (Wasserstoff ist leichter als Luft).`, async () => {
+    tubeP.show = true; tubeP.fill = 0;
+    tubeP.x = cx + dir * 90; tubeP.y = 40; tubeP.phi = dir * 38;
+    const sx = tubeP.x, sy = tubeP.y, sph = tubeP.phi;
+    await anim(1000, p => { tubeP.x = lerp(sx, cx, p); tubeP.y = lerp(sy, 74, p); tubeP.phi = lerp(sph, 0, p); });
+  });
+  await step(`Schritt ${firstNo + 1}/${N}: Der Hahn wird geöffnet – das Gas steigt in das Reagenzglas.`, async () => {
+    await setHandle(arm, true);
+    const dr = drain(arm, Math.min(8, state.V[arm] * 0.6), 2600, false);
+    await anim(2600, p => { tubeP.fill = p; }, linear);
+    await dr;
+  });
+}
+
+async function runGlimmspan(arm) {
+  const cx = ARMX[arm], dir = dirOf(arm), inward = -dir, bx = burnerX(arm), gas = state.gasOf[arm];
+  const N = 5, tk = runToken;
+  beginTest();
+  try {
+    if (state.mode === 'student') {
+      await orderChallenge('Glimmspanprobe: Ablauf planen', [
+        'Stromquelle ausschalten', 'Holzspan entzünden und die Flamme ausblasen (er glimmt nur noch)',
+        'Glimmenden Span dicht an die Hahnöffnung halten', 'Hahn vorsichtig öffnen', 'Hahn wieder schließen'], [
+        { t: 'Brennenden Span (mit Flamme) an die Hahnöffnung halten', why: 'Für die Glimmspanprobe darf der Span nicht mehr brennen, sonst sieht man das Aufflammen nicht.' },
+        { t: 'Hahn öffnen, während die Stromquelle noch eingeschaltet ist', why: 'Sicherheit zuerst: Erst die Stromquelle ausschalten, bevor Gas abgelassen wird.' }],
+        'Ein Glimmspan ist ein Holzspan, dessen Flamme ausgeblasen wurde, sodass er nur noch glüht.');
+    }
+    await step(`Schritt 1/${N}: Die Stromquelle wird ausgeschaltet, bevor der Hahn geöffnet wird.`, async () => { state.powerOn = false; }, true);
+
+    await step(`Schritt 2/${N}: Ein Holzspan wird an der Brennerflamme entzündet, die Flamme wird ausgeblasen – der Span glimmt nur noch.`, async () => {
+      burner.x = bx; burner.show = true; burner.flame = 0;
+      sp.show = true; sp.glow = 0; sp.flame = 0; sp.smoke = 0;
+      sp.x = bx + inward * 110; sp.y = 150; sp.a = arm === 0 ? 60 : 120;
+      await anim(500, p => { burner.flame = p; });
+      const sx = sp.x, sy = sp.y;
+      await anim(800, p => { sp.x = lerp(sx, bx, p); sp.y = lerp(sy, 252, p); });
+      await anim(500, p => { sp.flame = p; sp.glow = .5 * p; });
+      await sleep(300);
+      const sx2 = sp.x, sy2 = sp.y;
+      await anim(500, p => { sp.x = lerp(sx2, bx + inward * 34, p); sp.y = lerp(sy2, 196, p); });
+      await anim(350, p => { sp.flame = 1 - p; sp.glow = .5 + .5 * p; burner.flame = 1 - p; });
+      burner.show = false; sp.smoke = 1;
+      await sleep(900); sp.smoke = 0;
+    });
+
+    await step(`Schritt 3/${N}: Der glimmende Span wird dicht an die Öffnung des Hahns gehalten.`, async () => {
+      const sx = sp.x, sy = sp.y, sa = sp.a, ta = arm === 0 ? 150 : 30;
+      await anim(1000, p => { sp.x = lerp(sx, cx, p); sp.y = lerp(sy, 51, p); sp.a = lerp(sa, ta, p); });
+    });
+
+    await step(`Schritt 4/${N}: Der Hahn wird vorsichtig geöffnet – das Gas strömt gegen den Glimmspan.`, async () => {
+      const ph = await askPredict('Was passiert mit dem glimmenden Span?', ['Der Span flammt hell auf', 'Der Span erlischt', 'Es passiert nichts'], gas === 'O2' ? 0 : 1);
+      setCaption(`Schritt 4/${N}: Der Hahn wird vorsichtig geöffnet – das Gas strömt gegen den Glimmspan.`);
+      await setHandle(arm, true);
+      const dr = drain(arm, Math.min(4, state.V[arm] * 0.6), 3400);
+      await sleep(500);
+      if (gas === 'O2') {
+        flareSound();
+        await anim(450, p => { sp.flame = 3.4 * p; sp.glow = 1; });
+        const fx = $('flareTxt'); fx.setAttribute('x', cx + dir * 60); fx.setAttribute('y', 8); fx.setAttribute('opacity', 1);
+        setCaption('Beobachtung: Der Glimmspan flammt hell auf!', 'result');
+        await resolvePredict(ph);
+        await dr;
+        await anim(600, p => { sp.flame = 3.4 * (1 - p); });
+        fx.setAttribute('opacity', 0);
+      } else {
+        await anim(1300, p => { sp.glow = 1 - p; });
+        sp.smoke = .8;
+        setCaption('Beobachtung: Der Glimmspan erlischt.', 'result');
+        await resolvePredict(ph);
+        await dr; await sleep(500); sp.smoke = 0;
+      }
+    });
+
+    await sleep(900);
+    await setHandle(arm, false);
+    await anim(500, p => { sp.y = lerp(51, 0, p); sp.x = lerp(cx, cx + dir * 40, p); });
+    sp.show = false; sp.flame = 0; sp.glow = 0; sp.smoke = 0;
+    finishTest({ key: 'glim', arm, gas });
+  } catch (e) { if (!(e instanceof Abort)) throw e; }
+  finally { if (tk === runToken) endTest(); }
+}
+
+async function runKnallgas(arm) {
+  const cx = ARMX[arm], dir = dirOf(arm), inward = -dir, bx = burnerX(arm), gas = state.gasOf[arm];
+  const N = 5, tk = runToken;
+  const mouthX = bx + inward * 11, mouthY = 246, phiFlame = -dir * 90;
+  beginTest();
+  try {
+    if (state.mode === 'student') {
+      await orderChallenge('Knallgasprobe: Ablauf planen', [
+        'Stromquelle ausschalten', 'Reagenzglas mit der Öffnung nach unten über die Hahnöffnung halten',
+        'Hahn öffnen: Das Gas strömt ins Reagenzglas', 'Hahn schließen und das Reagenzglas (Öffnung nach unten) wegnehmen',
+        'Reagenzglas mit der Öffnung an die Brennerflamme halten'], [
+        { t: 'Reagenzglas mit der Öffnung nach oben über den Hahn halten', why: 'Wasserstoff ist leichter als Luft und steigt nach oben. Das Reagenzglas muss mit der Öffnung nach unten gehalten werden, sonst entweicht das Gas.' },
+        { t: 'Brenner direkt neben dem Hahn anzünden, während Gas ausströmt', why: 'Brennbares Gas strömt aus: Die Flamme muss weit weg bleiben, erst am Ende wird getestet.' }],
+        'Gas wird in einem Reagenzglas aufgefangen und dann an die Flamme gehalten.');
+    }
+    await step(`Schritt 1/${N}: Die Stromquelle wird ausgeschaltet, bevor der Hahn geöffnet wird.`, async () => { state.powerOn = false; }, true);
+    await collectGas(arm, N, 2);
+
+    await step(`Schritt 4/${N}: Der Hahn wird geschlossen, das Reagenzglas wird vorsichtig mit der Öffnung nach unten weggenommen.`, async () => {
+      await setHandle(arm, false);
+      const sx = tubeP.x, sy = tubeP.y;
+      await anim(900, p => { tubeP.x = lerp(sx, cx + dir * 55, p); tubeP.y = lerp(sy, 36, p); tubeP.phi = lerp(0, dir * 25, p); });
+    });
+
+    await step(`Schritt 5/${N}: Das Reagenzglas wird mit der Öffnung an die Brennerflamme gehalten.`, async () => {
+      burner.x = bx; burner.show = true; burner.flame = 0;
+      await anim(450, p => { burner.flame = p; });
+      const sx = tubeP.x, sy = tubeP.y, sph = tubeP.phi;
+      await anim(1300, p => { tubeP.x = lerp(sx, mouthX, p); tubeP.y = lerp(sy, mouthY, p); tubeP.phi = lerp(sph, phiFlame, p); });
+      const ph = await askPredict('Was passiert, wenn das Gas die Flamme erreicht?', ['Dumpfes „Plopp“ (kleiner Knall)', 'Die Flamme brennt heller', 'Es passiert nichts'], gas === 'H2' ? 0 : 1);
+      setCaption(`Schritt 5/${N}: Das Reagenzglas wird mit der Öffnung an die Brennerflamme gehalten.`);
+      await sleep(350);
+      if (gas === 'H2') {
+        popSound();
+        const fl = $('flash'), fl2 = $('flash2'), pt = $('popTxt');
+        const px = mouthX, py = mouthY;
+        fl.setAttribute('cx', px); fl.setAttribute('cy', py); fl2.setAttribute('cx', px); fl2.setAttribute('cy', py);
+        pt.setAttribute('x', px + inward * 20); pt.setAttribute('y', py - 52);
+        const popAnim = anim(700, p => {
+          fl.setAttribute('r', 8 + 60 * p); fl.setAttribute('opacity', (1 - p) * .85);
+          fl2.setAttribute('r', 6 + 36 * p); fl2.setAttribute('opacity', (1 - p) * .7);
+          pt.setAttribute('opacity', p < .85 ? 1 : (1 - p) / .15);
+          burner.flame = 1 + 0.9 * Math.sin(Math.PI * Math.min(1, p * 1.6));
+        }, linear);
+        await anim(120, p => { tubeP.fill = 1 - p; }, linear);
+        await popAnim;
+        burner.flame = 1;
+        setCaption('Beobachtung: Es ist ein dumpfes „Plopp“ zu hören – das Gas im Reagenzglas verpufft.', 'result');
+        await resolvePredict(ph);
+        await sleep(600);
+      } else {
+        flareSound();
+        await anim(500, p => { burner.flame = 1 + .35 * p; });
+        setCaption('Beobachtung: Kein Knall. Die Flamme wird nur etwas heller.', 'result');
+        await resolvePredict(ph);
+        await sleep(900);
+        await anim(400, p => { burner.flame = 1.35 - .35 * p; });
+      }
+    });
+
+    await anim(450, p => { burner.flame = 1 - p; tubeP.y = mouthY - 30 * p; });
+    burner.show = false; tubeP.show = false; tubeP.fill = 0;
+    finishTest({ key: 'knall', arm, gas });
+  } catch (e) { if (!(e instanceof Abort)) throw e; }
+  finally { if (tk === runToken) endTest(); }
+}
+
+async function runKalkInd(arm, key) {
+  const cx = ARMX[arm], dir = dirOf(arm), gas = state.gasOf[arm];
+  const N = 4, tk = runToken;
+  beginTest();
+  try {
+    await step(`Schritt 1/${N}: Die Stromquelle wird ausgeschaltet, bevor der Hahn geöffnet wird.`, async () => { state.powerOn = false; }, true);
+    await collectGas(arm, N, 2);
+    await step(key === 'kalk' ? `Schritt 4/${N}: Hahn schließen, Reagenzglas wegnehmen, Kalkwasser zugeben und schütteln.` : `Schritt 4/${N}: Hahn schließen, Reagenzglas wegnehmen, feuchtes Indikatorpapier hineinhalten.`, async () => {
+      await setHandle(arm, false);
+      const sx = tubeP.x, sy = tubeP.y;
+      await anim(1200, p => { tubeP.x = lerp(sx, cx + dir * 55, p); tubeP.y = lerp(sy, 36, p); tubeP.phi = lerp(0, dir * 25, p); });
+      await sleep(900);
+      setCaption('Beobachtung: ' + outcomeOf(key, gas).obs, 'result');
+      await sleep(1200);
+    });
+    tubeP.show = false; tubeP.fill = 0;
+    finishTest({ key, arm, gas });
+  } catch (e) { if (!(e instanceof Abort)) throw e; }
+  finally { if (tk === runToken) endTest(); }
+}
+
+function startTest(key) {
+  if (state.busy || state.pending) return;
+  const arm = state.arm;
+  if (state.V[arm] < MINV) return;
+  audio();
+  if (key === 'glim') runGlimmspan(arm);
+  else if (key === 'knall') runKnallgas(arm);
+  else runKalkInd(arm, key);
+}
+
+/* ---------- Messreihe ---------- */
+function addRow() {
+  if (state.rows.length >= 12) return;
+  state.rows.push({ t: state.t, v0: reading(state.V[0]), v1: reading(state.V[1]) });
+  state.rows.sort((a, b) => a.t - b.t);
+  renderRows(); updateAll();
+}
+const tfmt = t => String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(Math.floor(t % 60)).padStart(2, '0');
+function renderRows() {
+  const body = $('rowsBody'); body.innerHTML = '';
+  state.rows.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i + 1}</td><td>${tfmt(r.t)}</td><td>${fmt(r.v0)}</td><td>${fmt(r.v1)}</td><td><button style="padding:1px 8px" title="Zeile löschen">✕</button></td>`;
+    tr.querySelector('button').addEventListener('click', () => { state.rows.splice(i, 1); renderRows(); updateAll(); });
+    body.appendChild(tr);
+  });
+  const d = $('dMeasRows'); d.innerHTML = '';
+  state.rows.forEach(r => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${tfmt(r.t)}</td><td>${fmt(r.v0)} mL</td><td>${fmt(r.v1)} mL</td>`; d.appendChild(tr); });
+  const last = state.rows[state.rows.length - 1];
+  $('ratioHint').textContent = last && last.v0 > 0 && last.v1 > 0
+    ? `Letzte Zeile: ${fmt(Math.max(last.v0, last.v1) / Math.min(last.v0, last.v1), 1)} : 1 (Verhältnis der beiden Gasvolumina).` : '';
+}
+
+/* ---------- Phasen (Schüler) ---------- */
+const PHASES = ['Vermutung', 'Versuch', 'Gase erkennen', 'Auswertung', 'Protokoll'];
+function phaseOk(p) {
+  const s = state.stu;
+  if (p === 1) return s.safety && !!s.hypWhat;
+  if (p === 2) return state.rows.length >= 3 && state.rows.some(r => Math.max(r.v0, r.v1) >= 10);
+  if (p === 3) return state.identified.H2 && state.identified.O2;
+  if (p === 4) return s.evalOk;
+  return true;
+}
+function showPhase(p) { state.phase = p; renderPhases(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function renderPhases() {
+  const nav = $('phaseNav'); nav.innerHTML = '';
+  PHASES.forEach((n, i) => {
+    const p = i + 1, b = document.createElement('button');
+    if (KURZ && (p < 2 || p > 3)) return;
+    b.textContent = `${KURZ ? p - 1 : p} ${n}`; b.className = (p === state.phase ? 'cur ' : '') + (p < state.maxPhase || (p === state.maxPhase && phaseOk(p) && p < 5) ? 'done' : '');
+    b.disabled = !(state.free || p <= state.maxPhase);
+    b.addEventListener('click', () => showPhase(p));
+    nav.appendChild(b);
+  });
+  $$('.phase').forEach(s => { s.hidden = +s.dataset.p !== state.phase; });
+}
+function advance(to) { state.maxPhase = Math.max(state.maxPhase, to); showPhase(to); }
+
+/* ---------- UI-Aktualisierung ---------- */
+let lastMsg = '';
+function notify(done) {
+  if (!KURZ || window.parent === window) return;
+  const msg = { type: 'wasser-sim', minus: state.gasOf.indexOf('H2'), rows: state.rows.map(r => ({ t: Math.round(r.t), v0: r.v0, v1: r.v1 })), H2: state.identified.H2, O2: state.identified.O2, done: !!done || !$('kurzDone').hidden };
+  const j = JSON.stringify(msg);
+  if (j !== lastMsg) { lastMsg = j; try { window.parent.postMessage(msg, '*'); } catch (e) {} }
+}
+function updateAll() { updateUI(); }
+function updateUI() {
+  const mm = tfmt(state.t), I = current();
+  $$('.js-power').forEach(b => { b.textContent = state.powerOn ? 'Stromquelle ausschalten' : 'Stromquelle einschalten'; b.disabled = state.busy; });
+  $$('.js-pstate').forEach(p => { p.textContent = state.powerOn ? 'EIN' : 'AUS'; p.className = 'pill js-pstate ' + (state.powerOn ? 'on' : 'off'); });
+  $$('.js-uval').forEach(e => { e.textContent = fmt(state.U) + ' V'; });
+  $$('.js-u').forEach(e => { if (+e.value !== state.U) e.value = state.U; });
+  $$('.js-speed button').forEach(b => b.classList.toggle('sel', +b.dataset.s === state.speed));
+  $('mTime').textContent = mm; $('mI').textContent = fmt(I, 2) + ' A';
+  $('mV0').textContent = fmt(reading(state.V[0])) + ' mL'; $('mV1').textContent = fmt(reading(state.V[1])) + ' mL';
+  $('dMeasLive').textContent = `Jetzt: t = ${mm}, links ${fmt(reading(state.V[0]))} mL, rechts ${fmt(reading(state.V[1]))} mL, I = ${fmt(I, 2)} A`;
+  const enough = state.V[state.arm] >= MINV;
+  const dis = state.busy || !!state.pending || !enough;
+  ['.js-glim', '.js-knall', '.js-kalk', '.js-ind'].forEach(s => $$(s).forEach(b => { b.disabled = dis; }));
+  $('testHint').textContent = state.pending ? 'Halte zuerst deine Beobachtung fest (unten).' : state.busy ? 'Probe läuft …' : enough ? 'Bereit: Wähle eine Probe.' : 'Dafür sind mindestens ' + MINV + ' mL Gas im gewählten Schenkel nötig.';
+  const totalV = state.V[0] + state.V[1];
+  $$('.js-elec input').forEach(r => { r.disabled = state.powerOn || totalV > 0.5 || state.busy; });
+  $$('.js-elec-sel').forEach(s => { s.disabled = state.powerOn || totalV > 0.5 || state.busy; if (s.value !== (state.electrolyte || '')) s.value = state.electrolyte || ''; });
+  $$('.js-real').forEach(c => { c.checked = state.real; });
+  const s = state.stu;
+  $('go2').disabled = !phaseOk(1);
+  $('go2hint').textContent = phaseOk(1) ? '' : 'Bitte Sicherheitsregeln bestätigen und eine Vermutung auswählen.';
+  $('go3').disabled = !phaseOk(2);
+  $('go3hint').textContent = phaseOk(2) ? '' : `Messwerte: ${state.rows.length}/3, mindestens ein Schenkel mit 10 mL oder mehr.`;
+  $('go4').disabled = !phaseOk(3);
+  if (KURZ) $('go4').textContent = 'Versuch beenden ▶';
+  $('go4hint').textContent = phaseOk(3) ? '' : `Nachgewiesen: Sauerstoff ${state.identified.O2 ? '✓' : '–'}, Wasserstoff ${state.identified.H2 ? '✓' : '–'}`;
+  $('go5').disabled = !s.evalOk;
+  notify();
+  $('refillBtn').disabled = state.busy;
+  updateHypButtons();
+}
+
+/* ---------- Auswertung (Schüler) ---------- */
+function fillSelect(sel, opts) { sel.innerHTML = opts.map(o => `<option value="${esc(o)}">${esc(o) || '– wählen –'}</option>`).join(''); }
+function evalCheck() {
+  const a = $('evA').value, b = $('evB').value, r = $('evRatio').value, c = $('evClass').value, pu = $('evPure').value, mx = $('evMix').value;
+  const issues = [];
+  const pair = [a, b].sort().join('|');
+  if (pair !== ['Sauerstoff', 'Wasserstoff'].sort().join('|')) issues.push('Die beiden Gase stimmen noch nicht. Schau in dein Protokoll der Proben.');
+  if (r !== '2 : 1') issues.push('Das Verhältnis passt nicht zu deiner Messreihe. Wie viel Wasserstoff entsteht im Vergleich zu Sauerstoff?');
+  if (c !== 'in zwei neue Stoffe zerlegt') issues.push('Denke an die Nachweise: Es sind neue Stoffe mit ganz anderen Eigenschaften entstanden. Was ist mit dem Wasser passiert?');
+  if (pu !== 'Reinstoff') issues.push('Wasser besteht aus nur einer Sorte Teilchen. Ist es ein Reinstoff oder ein Stoffgemisch?');
+  if (mx !== 'Stoffgemisch') issues.push('In der Flüssigkeit im Gerät sind Wasser und ein Zusatz vermischt. Was ist das?');
+  if (!state.stu.verdict) issues.push('Bewerte deine Vermutung aus Phase 1.');
+  const m = $('evMsg');
+  if (issues.length) { state.stu.attempts++; state.stu.evalOk = false; m.innerHTML = issues.map(t => `<div class="msg bad">${esc(t)}</div>`).join(''); }
+  else { state.stu.evalOk = true; m.innerHTML = '<div class="msg ok">Alles richtig. Du kannst dein Protokoll erstellen.</div>'; }
+  state.stu.refl = $('evRefl').value;
+  updateAll();
+}
+
+/* ---------- Protokoll ---------- */
+function chartSVG(rows) {
+  if (!rows.length) return '';
+  const W = 440, H = 270, L = 50, R = 16, T = 16, B = 56;
+  const tmax = Math.max(60, ...rows.map(r => r.t)) * 1.08;
+  const x = t => L + (W - L - R) * t / tmax, y = v => H - B - (H - T - B) * v / 50;
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="max-width:100%;height:auto;font-family:sans-serif">`;
+  s += `<rect width="${W}" height="${H}" fill="#fff"/>`;
+  for (let v = 0; v <= 50; v += 10) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#dfe6ee"/><text x="${L - 6}" y="${y(v) + 4}" font-size="11" text-anchor="end" fill="#333">${v}</text>`;
+  for (let i = 0; i <= 4; i++) { const t = tmax * i / 4; s += `<line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${H - B}" stroke="#eef2f7"/><text x="${x(t)}" y="${H - B + 15}" font-size="11" text-anchor="middle" fill="#333">${tfmt(t)}</text>`; }
+  s += `<line x1="${L}" x2="${L}" y1="${T}" y2="${H - B}" stroke="#333"/><line x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}" stroke="#333"/>`;
+  s += `<text x="${(L + W - R) / 2}" y="${H - B + 32}" font-size="12" text-anchor="middle" fill="#333">Zeit t (min:s)</text>`;
+  s += `<text transform="translate(14 ${(T + H - B) / 2}) rotate(-90)" font-size="12" text-anchor="middle" fill="#333">Gasvolumen V (mL)</text>`;
+  const series = [['v0', '#0b6bcb', 'linker Schenkel'], ['v1', '#d97706', 'rechter Schenkel']];
+  series.forEach(([k, col], si) => {
+    const pts = [[0, 0], ...rows.map(r => [r.t, r[k]])];
+    s += `<polyline points="${pts.map(p => x(p[0]) + ',' + y(p[1])).join(' ')}" fill="none" stroke="${col}" stroke-width="2"/>`;
+    rows.forEach(r => { s += `<circle cx="${x(r.t)}" cy="${y(r[k])}" r="3.5" fill="${col}"/>`; });
+  });
+  series.forEach(([k, col, name], i) => { s += `<rect x="${L + 10 + i * 140}" y="${H - 14}" width="12" height="3" fill="${col}"/><text x="${L + 26 + i * 140}" y="${H - 9}" font-size="11" fill="#333">${name}</text>`; });
+  return s + '</svg>';
+}
+function skizzeSVG() {
+  const c = $('svg').cloneNode(true); c.removeAttribute('id'); c.setAttribute('class', 'skizze');
+  c.querySelectorAll('[id]').forEach(e => { if (!/^(gloss|glowGrad|cav)$/.test(e.id)) e.removeAttribute('id'); });
+  c.setAttribute('width', '480'); c.removeAttribute('role');
+  return c.outerHTML;
+}
+const PR_CSS = `body{font-family:"Segoe UI",system-ui,Arial,sans-serif;color:#1b2a3a;line-height:1.4;margin:0;padding:20px;background:#fff}
+.pr{max-width:860px;margin:0 auto;font-size:15px}.pr h1{font-size:22px;margin:0 0 4px}.pr h2{font-size:17px;margin:16px 0 6px;border-bottom:2px solid #12304f;padding-bottom:2px;color:#12304f}
+.pr table{border-collapse:collapse;margin:6px 0}.pr td,.pr th{border:1px solid #9aa8b8;padding:3px 9px;text-align:center}.pr .meta{display:flex;gap:24px;flex-wrap:wrap;margin:6px 0 10px}
+.pr .meta span{min-width:180px;border-bottom:1px solid #444;padding-bottom:1px}.pr .eq{font-size:17px;font-weight:700;margin:4px 0}.pr ol,.pr ul{margin:4px 0;padding-left:22px}.pr svg.skizze{max-width:480px;height:auto}
+.pr .two{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}@media print{@page{margin:14mm}}`;
+function buildProtocol() {
+  const demo = state.mode === 'demo', s = state.stu;
+  const elec = state.electrolyte === 'dest' ? 'reines Wasser' : 'Wasser mit einem Zusatz (etwas verdünnte Schwefelsäure)';
+  const mArm = [0, 1].find(a => polOf(a) === 'minus');
+  const last = state.rows[state.rows.length - 1];
+  let ratioTxt = '';
+  if (last && last.v0 > 0 && last.v1 > 0) { const big = Math.max(last.v0, last.v1), small = Math.min(last.v0, last.v1); ratioTxt = `${fmt(big / small, 1)} : 1`; }
+  const formel = demo && $('dFormel').checked;
+  const name = demo ? '' : esc(s.name), klasse = demo ? '' : esc(s.klasse);
+  const date = new Date().toLocaleDateString('de-DE');
+  const tests = state.protocol;
+  let h = `<h1>Protokoll: Zerlegung von Wasser mit elektrischem Strom</h1>
+<div class="meta"><span>Name: ${name}&nbsp;</span><span>Klasse: ${klasse}&nbsp;</span><span>Datum: ${date}</span></div>
+<h2>Fragestellung</h2><p>Wasser ist ein Reinstoff. Was passiert, wenn man elektrischen Strom durch Wasser leitet? Welche Stoffe entstehen, und wie viel von jedem?</p>`;
+  h += `<h2>Vermutung</h2>`;
+  if (!demo && s.hypWhat) h += `<p>${esc(s.hypWhat)}${s.hypGas.length ? ' Mögliche Stoffe: ' + esc(s.hypGas.join(', ')) + '.' : ''}${s.hypRatio ? ' Mengenverhältnis der Gase: ' + esc(s.hypRatio) + '.' : ''}${s.hypText ? ' Begründung: ' + esc(s.hypText) : ''}</p>`;
+  else h += `<p>&nbsp;<br>&nbsp;</p>`;
+  h += `<h2>Materialien</h2><p>Hofmann'scher Wasserzersetzungsapparat, Stromquelle (Netzgerät), ${esc(elec)}, Holzspan, Brenner, Reagenzglas, Schutzbrille.</p>`;
+  h += `<h2>Versuchsaufbau (Skizze)</h2>${skizzeSVG()}`;
+  const armDat = a => (a === 0 ? 'linken' : 'rechten') + ' Schenkel (' + (polOf(a) === 'minus' ? 'Minuspol' : 'Pluspol') + ')';
+  h += `<h2>Durchführung</h2><ol><li>Das Gerät wird mit ${state.electrolyte === 'dest' ? 'reinem Wasser' : 'Wasser gefüllt, dem als Zusatz etwas verdünnte Schwefelsäure beigemischt ist'} und an die Stromquelle angeschlossen (Minuspol: ${mArm === 0 ? 'linker' : 'rechter'} Schenkel).</li>
+<li>Die Stromquelle wird mit ${fmt(state.U)} V eingeschaltet. Die Gasvolumina in beiden Schenkeln werden in regelmäßigen Abständen abgelesen.</li>`;
+  tests.forEach(t => { h += `<li>${esc(t.test)} mit dem Gas aus dem ${esc(armDat(t.arm))} (Stromquelle vorher ausgeschaltet).</li>`; });
+  h += `</ol><h2>Beobachtung</h2>`;
+  if (state.rows.length) {
+    h += `<div class="two"><div><table><tr><th>Nr.</th><th>Zeit t</th><th>V links (mL)</th><th>V rechts (mL)</th></tr>${state.rows.map((r, i) => `<tr><td>${i + 1}</td><td>${tfmt(r.t)}</td><td>${fmt(r.v0)}</td><td>${fmt(r.v1)}</td></tr>`).join('')}</table>
+${ratioTxt ? `<p>Letzte Messung: V(links) : V(rechts) ≈ ${ratioTxt}</p>` : ''}</div><div>${chartSVG(state.rows)}</div></div>`;
+  } else h += `<p>(Es wurde keine Messreihe festgehalten.)</p>`;
+  h += `<p>An beiden Metallstäben steigen Gasblasen auf. Im Schenkel am Minuspol sammelt sich etwa doppelt so viel Gas wie im Schenkel am Pluspol.</p>`;
+  if (tests.length) h += `<ul>${tests.map(t => `<li><b>${esc(t.test)}</b> (${esc(armName(t.arm))}): ${esc(t.obs)}</li>`).join('')}</ul>`;
+  h += `<h2>Auswertung</h2>`;
+  if (tests.length) h += `<ul>${tests.map(t => `<li>${esc(t.test)}, ${esc(armName(t.arm))}: ${esc(t.deut)}</li>`).join('')}</ul>`;
+  h += `<p>Im Schenkel am Minuspol entsteht <b>Wasserstoff</b>, im Schenkel am Pluspol <b>Sauerstoff</b>. Das Volumenverhältnis beträgt ungefähr V(Wasserstoff) : V(Sauerstoff) = 2 : 1.</p>
+<div class="eq">Wasser → Wasserstoff + Sauerstoff</div>${formel ? '<div class="eq">2 H₂O → 2 H₂ + O₂</div>' : ''}
+<p><b>Folgerung:</b> Aus dem Reinstoff Wasser entstehen mit Hilfe von elektrischem Strom zwei neue Reinstoffe mit ganz anderen Eigenschaften. Das Wasser wurde nicht nur verdampft, sondern zerlegt.</p>`;
+  if (!demo) {
+    if (s.verdict) h += `<p><b>Meine Vermutung war</b> ${esc(s.verdict)}.</p>`;
+    if (s.refl) h += `<h2>Bemerkungen</h2><p>${esc(s.refl)}</p>`;
+  } else h += `<h2>Bemerkungen</h2><p>&nbsp;<br>&nbsp;</p>`;
+  return h;
+}
+function openProtocol() {
+  $('protoBody').innerHTML = buildProtocol();
+  $('protoModal').hidden = false; document.body.classList.add('printing');
+}
+$('prClose').addEventListener('click', () => { $('protoModal').hidden = true; document.body.classList.remove('printing'); });
+$('prPrint').addEventListener('click', () => window.print());
+$('prDownload').addEventListener('click', () => {
+  const html = `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><title>Protokoll Zerlegung von Wasser</title><style>${PR_CSS}</style></head><body><div class="pr">${$('protoBody').innerHTML}</div></body></html>`;
+  const blob = new Blob([html], { type: 'text/html' }); const a = document.createElement('a');
+  const nm = (state.stu.name || 'Protokoll').replace(/[^\wäöüÄÖÜß-]+/g, '_');
+  a.href = URL.createObjectURL(blob); a.download = `Protokoll_Wasserzerlegung_${nm}.html`; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+
+/* ---------- Steuerung ---------- */
+const KURZ = /kurz/i.test(location.search + location.hash);
+if (KURZ) document.documentElement.classList.add('kurz');
+const intro = {
+  student: 'Willkommen! Bearbeite die fünf Phasen rechts der Reihe nach. Beginne mit deiner Vermutung.',
+  demo: 'Zuerst die Vermutungen der Klasse sammeln (rechts). Dann die Stromquelle einschalten und beobachten.'
+};
+if (KURZ) intro.student = 'Schalte rechts die Stromquelle ein und beobachte die beiden Glasröhren.';
+function resetAll(swap, keepStudent) {
+  runToken++;
+  nextResolve = null; nextBtn.hidden = true; $('nextHint').hidden = true;
+  state.V = [0, 0]; state.produced = [0, 0]; state.t = 0; state.powerOn = false; state.rows = [];
+  state.open = [false, false]; state.flow = [false, false]; state.busy = false; state.pending = null;
+  state.known = [false, false]; state.revealed = false;
+  if (!keepStudent) { state.protocol = []; state.identified = { H2: false, O2: false }; state.stu = freshStu(); state.phase = 1; state.maxPhase = 1; state.hyp = freshHyp(); if (KURZ) { state.stu.safety = true; state.stu.hypWhat = 'kurz'; state.phase = 2; state.maxPhase = 2; } }
+  if (swap) state.gasOf = [state.gasOf[1], state.gasOf[0]];
+  handleAngle[0] = handleAngle[1] = 0; applyHandle(0); applyHandle(1);
+  sp.show = false; sp.glow = sp.flame = sp.smoke = 0; burner.show = false; burner.flame = 0; tubeP.show = false; tubeP.fill = 0;
+  ['flash', 'flash2', 'popTxt', 'flareTxt'].forEach(id => $(id).setAttribute('opacity', 0));
+  clearBubbles(); clearSmoke(); applyPolarity();
+  $('orderBox').hidden = true; $('orderBox').innerHTML = ''; $('predictCard').hidden = true;
+  $('measCard').hidden = true; $('deutCard').hidden = true; syncSide();
+  if (!keepStudent) syncStudentForm();
+  renderRows(); renderObs(); renderProtoList(); renderPhases(); renderHyp();
+  setCaption(intro[state.mode]);
+  updateAll();
+}
+function syncSide() {}
+function syncStudentForm() {
+  $('stuSafety').checked = false; $('hypText').value = ''; $('evRefl').value = ''; $('evMsg').innerHTML = '';
+  $$('#hypWhat input, #hypGas input, #hypRatio input, #evVerdict input').forEach(i => { i.checked = false; });
+  ['evA', 'evB', 'evRatio', 'evClass', 'evPure', 'evMix'].forEach(id => { $(id).selectedIndex = 0; });
+  $('stuName').value = ''; $('stuKlasse').value = '';
+  $$('.js-elec input').forEach(i => { i.checked = (i.value === 'h2so4'); });
+}
+function setMode(m, first) {
+  if (!first && state.mode !== m && (state.protocol.length || state.rows.length || state.stu.hypGas.length) && !confirm('Beim Wechsel des Modus wird alles zurückgesetzt. Fortfahren?')) return;
+  state.mode = m; $('app').className = 'mode-' + m;
+  $('svg').setAttribute('viewBox', m === 'demo' ? '0 -34 760 814' : '0 -40 760 830');
+  $$('#modeSwitch button').forEach(b => b.classList.toggle('sel', b.dataset.m === m));
+  $$('.js-step').forEach(c => { c.checked = (m === 'demo'); });
+  state.real = (m === 'student'); state.electrolyte = 'h2so4'; state.free = $('freeMode').checked;
+  resetAll(false);
+}
+function setPowerFromUI() {
+  if (state.busy) return;
+  if (state.powerOn) { state.powerOn = false; updateAll(); return; }
+  if (!state.electrolyte) { setCaption('Wähle zuerst die Flüssigkeit im Gerät (im Feld „Flüssigkeit im Gerät“).', 'warn'); return; }
+  audio();
+  const go = async () => {
+    state.powerOn = true;
+    if (elecF() < 0.1) setCaption('Es fließt kaum Strom, und es entsteht fast kein Gas. Reines Wasser leitet den Strom schlecht. Was könnte man dem Wasser zusetzen?', 'warn');
+    else if (state.U < 1.7) setCaption('Die Stromquelle ist zu schwach eingestellt: Es passiert nichts. Erhöhe die Spannung.', 'warn');
+    else if (!state.protocol.length) setCaption('Der Strom fließt. Beobachte die Gasblasen an den Metallstäben und das Gasvolumen in den beiden Schenkeln.');
+    updateAll();
+  };
+  go();
+}
+
+/* ---------- Aufbau der Formulare ---------- */
+(function initForms() {
+  // Hypothese
+  const what = ['Nichts: Das Wasser bleibt Wasser.', 'Das Wasser verdampft.', 'Aus dem Wasser entstehen neue Stoffe.', 'Das weiß ich nicht.'];
+  $('hypWhat').innerHTML = what.map(g => `<label class="opt"><input type="radio" name="hw" value="${g}"> ${g}</label>`).join('');
+  $('hypWhat').addEventListener('change', e => { state.stu.hypWhat = e.target.value; updateAll(); });
+  const gases = ['Wasserstoff', 'Sauerstoff', 'Stickstoff', 'Kohlenstoffdioxid', 'Das weiß ich nicht'];
+  $('hypGas').innerHTML = gases.map(g => `<label class="opt"><input type="checkbox" value="${g}"> ${g}</label>`).join('');
+  $('hypGas').addEventListener('change', () => { state.stu.hypGas = $$('#hypGas input:checked').map(i => i.value); updateAll(); });
+  const rat = ['Beide Gase gleich viel', 'Ein Gas doppelt so viel wie das andere', 'Ein Gas dreimal so viel wie das andere', 'Das weiß ich nicht'];
+  $('hypRatio').innerHTML = rat.map(g => `<label class="opt"><input type="radio" name="hr" value="${g}"> ${g}</label>`).join('');
+  $('hypRatio').addEventListener('change', e => { state.stu.hypRatio = e.target.value; updateAll(); });
+  $('hypText').addEventListener('input', e => { state.stu.hypText = e.target.value; });
+  $('stuSafety').addEventListener('change', e => { state.stu.safety = e.target.checked; updateAll(); });
+  // Flüssigkeit
+  const el = Object.entries(ELEC);
+  $('elecChoice').className = 'js-elec';
+  $('elecChoice').innerHTML = el.map(([k, v]) => `<label class="opt"><input type="radio" name="el" value="${k}"> ${v.name}</label>`).join('');
+  $('elecChoice').addEventListener('change', e => { state.electrolyte = e.target.value; updateAll(); });
+  $('dElec').innerHTML = el.map(([k, v]) => `<option value="${k}">${v.short}</option>`).join('');
+  $('dElec').addEventListener('change', e => { state.electrolyte = e.target.value; updateAll(); });
+  // Auswertung
+  const sub = ['', 'Wasserstoff', 'Sauerstoff', 'Stickstoff', 'Kohlenstoffdioxid'];
+  fillSelect($('evA'), sub); fillSelect($('evB'), sub);
+  fillSelect($('evRatio'), ['', '1 : 1', '2 : 1', '1 : 2', '3 : 1']);
+  fillSelect($('evClass'), ['', 'in zwei neue Stoffe zerlegt', 'nur in einen anderen Zustand gebracht', 'mit Luft vermischt']);
+  fillSelect($('evPure'), ['', 'Reinstoff', 'Stoffgemisch']); fillSelect($('evMix'), ['', 'Reinstoff', 'Stoffgemisch']);
+  ['evA', 'evB', 'evRatio', 'evClass', 'evPure', 'evMix'].forEach(id => $(id).addEventListener('change', () => { state.stu.evalOk = false; updateAll(); }));
+  const ver = ['richtig', 'teilweise richtig', 'falsch'];
+  $('evVerdict').innerHTML = ver.map(v => `<label class="opt"><input type="radio" name="vd" value="${v}"> ${v}</label>`).join('');
+  $('evVerdict').addEventListener('change', e => { state.stu.verdict = e.target.value; state.stu.evalOk = false; updateAll(); });
+  $('evCheck').addEventListener('click', evalCheck);
+  $('evRefl').addEventListener('input', e => { state.stu.refl = e.target.value; });
+  $('stuName').addEventListener('input', e => { state.stu.name = e.target.value; });
+  $('stuKlasse').addEventListener('input', e => { state.stu.klasse = e.target.value; });
+})();
+
+/* ---------- Ereignisse ---------- */
+$$('#modeSwitch button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.m)));
+$$('.js-power').forEach(b => b.addEventListener('click', setPowerFromUI));
+$$('.js-u').forEach(e => e.addEventListener('input', ev => { state.U = +ev.target.value; updateAll(); }));
+$$('.js-speed button').forEach(b => b.addEventListener('click', () => { state.speed = +b.dataset.s; updateAll(); }));
+$$('.js-arm').forEach(r => r.addEventListener('change', () => { state.arm = +r.value; $$('.js-arm').forEach(x => { x.checked = (+x.value === state.arm); }); updateAll(); }));
+$$('.js-glim').forEach(b => b.addEventListener('click', () => startTest('glim')));
+$$('.js-knall').forEach(b => b.addEventListener('click', () => startTest('knall')));
+$$('.js-kalk').forEach(b => b.addEventListener('click', () => startTest('kalk')));
+$$('.js-ind').forEach(b => b.addEventListener('click', () => startTest('ind')));
+$$('.js-real').forEach(c => c.addEventListener('change', () => { state.real = c.checked; updateAll(); }));
+$$('.js-step').forEach(c => c.addEventListener('change', () => { $$('.js-step').forEach(x => { x.checked = c.checked; }); }));
+$$('.js-sound').forEach(c => c.addEventListener('change', () => { $$('.js-sound').forEach(x => { x.checked = c.checked; }); }));
+$('freeMode').addEventListener('change', e => { state.free = e.target.checked; renderPhases(); });
+$('addRow').addEventListener('click', addRow);
+$('refillBtn').addEventListener('click', () => resetAll(false, true));
+$('go2').addEventListener('click', () => advance(2));
+$('go3').addEventListener('click', () => advance(3));
+$('go4').addEventListener('click', () => { if (KURZ) { $('kurzDone').hidden = false; $('kurzDone').scrollIntoView({ behavior: 'smooth', block: 'center' }); notify(true); } else advance(4); });
+$('go5').addEventListener('click', () => advance(5));
+$('makeProto').addEventListener('click', openProtocol);
+$('sReset').addEventListener('click', () => resetAll(false));
+$('sSwap').addEventListener('click', () => resetAll(true));
+// Demo
+$('dMeas').addEventListener('click', () => { $('measCard').hidden = false; syncSide(); });
+$('dMeasClose').addEventListener('click', () => { $('measCard').hidden = true; syncSide(); });
+$('dMeasAdd').addEventListener('click', addRow);
+$('dDeut').addEventListener('click', () => {
+  state.revealed = true; $('deutCard').hidden = false;
+  $('dDeutGas').innerHTML = [0, 1].map(a => `<div><b>${a === 0 ? 'Linker' : 'Rechter'} Schenkel (${polOf(a) === 'minus' ? 'Minuspol' : 'Pluspol'}):</b> ${GAS[state.gasOf[a]].name}</div>`).join('');
+  $('dFormelEq').style.display = $('dFormel').checked ? '' : 'none';
+  syncSide();
+});
+$('dDeutClose').addEventListener('click', () => { $('deutCard').hidden = true; syncSide(); });
+$('dProto').addEventListener('click', openProtocol);
+$('dReset').addEventListener('click', () => resetAll(false));
+$('dSwap').addEventListener('click', () => resetAll(true));
+
+/* ---------- Hauptschleife ---------- */
+let last = performance.now(), uiAcc = 0;
+function loop(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  simulate(dt); updBubbles(dt); updStreams(dt); updSmoke(dt); render();
+  uiAcc += dt; if (uiAcc > .1) { uiAcc = 0; updateUI(); }
+  requestAnimationFrame(loop);
+}
+applyHandle(0); applyHandle(1);
+setMode(/demo/i.test(location.hash + location.search) ? 'demo' : 'student', true);
+requestAnimationFrame(loop);
+
+window.__sim = { state, resetAll, setMode };
+})();
+</script>
+</body>
+</html>

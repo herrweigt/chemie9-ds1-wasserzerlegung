@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chemie 9 · Doppelstunde 1 · Wasser wird zerlegt</title>
+<style>
+:root{--bg:#f3f6fb;--card:#fff;--ink:#1b2a3a;--muted:#5b6b7c;--line:#d8e0ea;--accent:#0b6bcb;--accent-d:#084f96;--warn:#c2410c;--ok:#15803d;--bad:#b91c1c;--navy:#12304f}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;font-size:17px}
+header{background:var(--navy);color:#fff;padding:10px 20px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+header h1{margin:0;font-size:1.25rem}
+header p{margin:2px 0 0;font-size:.85rem;opacity:.85}
+button,select,input,textarea{font:inherit}
+button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 14px;cursor:pointer;min-height:42px}
+button:hover:not(:disabled){border-color:var(--accent)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent-d);font-weight:600}
+button.primary:hover:not(:disabled){background:var(--accent-d)}
+header button{background:transparent;color:#fff;border-color:#5d7fa3}
+#nav{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+#nav button{padding:5px 10px;min-height:36px;font-size:.92rem}
+#nav button.cur{background:var(--navy);color:#fff;border-color:var(--navy)}
+#nav button.done{border-color:var(--ok);color:var(--ok)}
+#nav button.cur.done{color:#fff}
+#nav .time{margin-left:auto;color:var(--muted);font-size:.9rem}
+main{max-width:1000px;margin:0 auto;padding:14px}
+.step{display:none}
+.step.cur{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0 0 14px}
+h2{margin:0 0 8px;font-size:1.4rem;color:var(--navy)}
+h3{margin:14px 0 6px;font-size:1.1rem;color:var(--navy)}
+.lead{font-size:1.05rem}
+.goal{background:#eef5fd;border-left:5px solid var(--accent);border-radius:8px;padding:10px 14px;margin:0 0 14px}
+.goal ul{margin:4px 0 0;padding-left:20px}
+.hint{color:var(--muted);font-size:.92rem}
+.gate{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.opt{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:10px;margin:5px 0;cursor:pointer;background:#fff}
+.opt input{margin-top:5px;transform:scale(1.25)}
+.opt.sel{border-color:var(--accent);background:#eef5fd}
+.opt.right{border-color:var(--ok);background:#ecfdf3}
+.opt.wrong{border-color:var(--bad);background:#fef2f2}
+.fb{margin-top:6px;font-size:.98rem}
+.fb.good{color:var(--ok)}
+.fb.bad{color:var(--bad)}
+.task{margin:0 0 16px;padding-bottom:6px}
+.task .q{font-weight:600;margin-bottom:4px}
+.tip{margin:6px 0;background:#fffbeb;border:1px solid #f3d98a;border-radius:8px;padding:4px 10px}
+.tip summary{cursor:pointer;font-weight:600}
+table.t{border-collapse:collapse;margin:6px 0;font-size:.97rem}
+table.t th,table.t td{border:1px solid var(--line);padding:5px 12px;text-align:center}
+table.t th{background:#eef5fd}
+.he{background:#fffdf5;border:2px solid #e6d28a;border-radius:12px;padding:12px 16px;margin:16px 0}
+.he h3.hh{margin:0 0 4px;font-size:1.05rem;color:#7a5b00}
+.he .hl2{font-size:1.2rem;font-weight:700;margin:10px 0 2px;color:var(--navy)}
+.he .hl3{font-size:1.02rem;font-weight:700;margin:8px 0 2px;color:var(--navy)}
+.he p{margin:2px 0 6px}
+.he select{font-size:.98rem;padding:3px 4px;border:2px solid #b8c4d2;border-radius:6px;background:#fff;max-width:100%}
+.he select.ok{border-color:var(--ok);background:#ecfdf3}
+.he select.no{border-color:var(--bad);background:#fef2f2}
+.he textarea,.own{width:100%;min-height:54px;border:1px solid var(--line);border-radius:8px;padding:6px;margin-top:4px}
+.copyrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+#simWrap{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+#simFrame{width:100%;height:760px;border:0;display:block}
+#simWrap.full{position:fixed;inset:0;z-index:50;border-radius:0;border:0}
+#simWrap.full #simFrame{height:calc(100vh - 52px)}
+#simBar{display:flex;gap:8px;padding:6px 8px;background:#12304f;color:#fff;align-items:center;justify-content:space-between;flex-wrap:wrap}
+#simBar button{background:transparent;color:#fff;border-color:#5d7fa3;min-height:36px;padding:4px 12px}
+.sortgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+.bin{border:2px dashed #9fb3c8;border-radius:12px;padding:8px;min-height:130px;cursor:pointer;background:#fafcff}
+.bin h4{margin:0 0 6px;text-align:center;color:var(--navy)}
+.bin.hot{border-color:var(--accent);background:#eef5fd}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.chip{border:2px solid #9fb3c8;border-radius:20px;padding:6px 14px;background:#fff;cursor:pointer;user-select:none}
+.chip.sel{border-color:var(--accent);background:#dbeafe;font-weight:700}
+.chip.good{border-color:var(--ok);background:#ecfdf3;cursor:default}
+.chip.shake{animation:sh .35s}
+@keyframes sh{20%{transform:translateX(-6px)}60%{transform:translateX(6px)}}
+.ampel{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.ampel button{min-width:130px}
+.ampel button.sel.g{background:#dcfce7;border-color:var(--ok)}
+.ampel button.sel.y{background:#fef9c3;border-color:#ca8a04}
+.ampel button.sel.r{background:#fee2e2;border-color:var(--bad)}
+.wsvg{width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:10px}
+.wk{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0}
+.wk .ctl{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:6px 10px}
+.wk .ctl b{min-width:1.5em;text-align:center}
+.modal{position:fixed;inset:0;background:rgba(10,25,45,.55);z-index:60;display:none;align-items:center;justify-content:center;padding:14px}
+.modal.on{display:flex}
+.modal .box{background:#fff;border-radius:14px;max-width:680px;max-height:86vh;overflow:auto;padding:16px 20px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.95rem;margin:4px 0}
+.schema svg{width:100%;height:auto}
+.imgs{display:flex;gap:12px;flex-wrap:wrap}
+.imgs svg{max-width:100%;height:auto}
+.pill{display:inline-block;border-radius:999px;padding:1px 10px;font-size:.85rem;background:#eef5fd;border:1px solid #b9d3f0}
+@media(max-width:700px){.sortgrid{grid-template-columns:1fr}#simFrame{height:640px}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Chemie 9 · Doppelstunde 1 · Wasser wird zerlegt</h1><p>Selbstständig arbeiten · Tablet · ca. 90 Minuten</p></div>
+  <button id="wsBtn">📖 Wortspeicher</button>
+</header>
+<div id="nav"></div>
+<main>
+
+<!-- ============ 0 START ============ -->
+<section class="step" data-s="0">
+  <div class="card">
+    <h2>Willkommen: Wasser wird zerlegt</h2>
+    <p class="lead">Das Video zum Hofmann'schen Zersetzungsapparat habt ihr schon gesehen. Heute findet ihr selbst heraus, <b>was dabei passiert</b> und warum. Ihr arbeitet ohne Lehrkraft. Die Seite gibt euch bei jeder Aufgabe sofort Rückmeldung.</p>
+    <div class="goal"><b>Du kannst danach:</b>
+      <ul>
+        <li>begründen, dass die Zerlegung von Wasser eine <b>chemische Reaktion</b> ist,</li>
+        <li><b>Elemente, Verbindungen und Stoffgemische</b> unterscheiden,</li>
+        <li>die Zerlegung von Wasser mit dem <b>Atommodell nach Dalton</b> erklären.</li>
+      </ul>
+    </div>
+    <h3>Ablauf (Richtwerte)</h3>
+    <table class="t">
+      <tr><th>Schritt</th><th>Was</th><th>Zeit</th></tr>
+      <tr><td>1</td><td>Vermutung aufstellen</td><td>5 min</td></tr>
+      <tr><td>2</td><td>Versuch in der Simulation</td><td>20 min</td></tr>
+      <tr><td>3</td><td>Auswertung + Hefteintrag 1</td><td>15 min</td></tr>
+      <tr><td>4</td><td>Stoffe einteilen + Hefteintrag 2</td><td>15 min</td></tr>
+      <tr><td>5</td><td>Dalton und Atom-Werkstatt + Hefteintrag 3</td><td>20 min</td></tr>
+      <tr><td>6</td><td>Test im mebis-Kurs + Reflexion</td><td>15 min</td></tr>
+    </table>
+    <h3>So arbeitest du</h3>
+    <ul>
+      <li>Die Aufgaben schalten nacheinander „Weiter“ frei. Bei einer falschen Antwort bekommst du einen Hinweis und versuchst es noch einmal.</li>
+      <li>Die <b>Hefteinträge</b> füllst du hier mit Auswahllisten aus. Danach kopierst du sie mit einem Klick in dein digitales Heft. Du musst fast nichts abschreiben.</li>
+      <li>Wenn du nicht weiterkommst: Tipp aufklappen, im <b>Wortspeicher</b> (oben rechts) nachsehen, dann eine Mitschülerin oder einen Mitschüler fragen.</li>
+      <li><b>Lade die Seite nicht neu.</b> Sonst gehen deine Eingaben verloren.</li>
+    </ul>
+    <div class="gate"><button class="primary next">Los geht's ▶</button></div>
+  </div>
+</section>
+
+<!-- ============ 1 VERMUTUNG ============ -->
+<section class="step" data-s="1">
+  <div class="card">
+    <h2>1.1 Was passiert mit Wasser unter Strom?</h2>
+    <p class="lead">Im Hofmann-Apparat wird <b>Wasser</b> (ein Reinstoff) an zwei Metallstäben an <b>elektrischen Strom</b> angeschlossen. Was erwartest du? Es gibt noch keine richtige Antwort. Du legst dich fest und prüfst deine Vermutung später am Versuch.</p>
+    <div id="vWhat" class="task"></div>
+    <div id="vGas" class="task"></div>
+    <div id="vRatio" class="task"></div>
+    <div class="gate"><button id="vFix" class="primary" disabled>Vermutung festlegen</button><span class="hint" id="vHint"></span></div>
+    <div class="gate"><button class="primary next">Weiter zum Versuch ▶</button><span class="hint need"></span></div>
+  </div>
+</section>
+
+<!-- ============ 2 VERSUCH ============ -->
+<section class="step" data-s="2">
+  <div class="card">
+    <h2>1.2 Der Versuch (Simulation)</h2>
+    <p class="lead">Führe den Versuch in der Simulation durch. Du siehst den Apparat, die Stromquelle und eine Messreihe. Dein Auftrag:</p>
+    <ol>
+      <li>Schalte die Stromquelle ein und beobachte beide Glasröhren.</li>
+      <li>Notiere <b>mindestens drei Messwerte</b> (Gasvolumen links und rechts).</li>
+      <li>Weise <b>beide Gase</b> mit den Proben nach (Glimmspanprobe und Knallgasprobe).</li>
+      <li>Klicke zum Schluss auf „Versuch beenden“.</li>
+    </ol>
+    <div id="simWrap">
+      <div id="simBar"><span>Simulation · Hofmann'scher Zersetzungsapparat</span><span><button id="fsBtn">⛶ Vollbild (empfohlen für Tablets)</button> <a href="wasser-sim.html?kurz" target="_blank" rel="noopener" style="color:#bcd6f5">in neuem Tab öffnen</a></span></div>
+      <iframe id="simFrame" title="Simulation Wasserzersetzung" src="wasser-sim.html?kurz"></iframe>
+    </div>
+    <h3>Deine Messwerte (kommen automatisch aus der Simulation)</h3>
+    <div id="liveRows" class="hint">Noch keine Messwerte.</div>
+    <div id="liveGas" class="hint"></div>
+    <details class="tip"><summary>Die Simulation lädt nicht oder funktioniert nicht?</summary>
+      <p>Öffne sie über „in neuem Tab öffnen“. Wenn das auch nicht geht, kannst du mit Beispiel-Messwerten weiterarbeiten.</p>
+      <button id="fallbackBtn">Mit Beispiel-Messwerten weiterarbeiten</button>
+    </details>
+    <div class="gate"><button class="primary next">Weiter zur Auswertung ▶</button><span class="hint need"></span></div>
+  </div>
+</section>
+
+<!-- ============ 3 AUSWERTUNG ============ -->
+<section class="step" data-s="3">
+  <div class="card">
+    <h2>1.3 Auswertung</h2>
+    <p class="hint" id="myVerm"></p>
+    <div id="tPole" class="task"></div>
+    <div id="tRatio" class="task"></div>
+    <div id="tReason" class="task"></div>
+    <div class="task" id="tHyp">
+      <div class="q">d) Woher kommen die Gase, und warum ist das Volumenverhältnis etwa 2 : 1? Stellt in <b>Partnerarbeit</b> eine Hypothese auf.</div>
+      <textarea class="own" id="hypText" placeholder="Unsere Hypothese: Die Gase kommen aus … Das Verhältnis 2 : 1 entsteht, weil …"></textarea>
+      <details class="tip"><summary>Tipp 1</summary>Gab es vor dem Versuch Wasserstoff und Sauerstoff im Gerät? Was war im Gerät außer dem Wasser?</details>
+      <details class="tip"><summary>Tipp 2</summary>Zwei Gase entstehen aus einem Stoff. Aus wie vielen „Bausteinen“ könnte ein Wasser-Teilchen bestehen, wenn doppelt so viel von dem einen Gas entsteht?</details>
+      <div class="gate"><button id="hypBtn" disabled>Hypothese abgeben</button><span class="hint" id="hypHint">mindestens 40 Zeichen</span></div>
+      <div id="hypFb"></div>
+    </div>
+    <div class="task" id="tEnergy">
+      <div class="q">e) Energie: Was steckt im Wasserstoff?</div>
+      <p style="margin:0 0 6px">Ohne Strom entsteht kein Gas. Die Stromquelle liefert die Energie für die Zerlegung. Verbrennt man den Wasserstoff später wieder (z. B. als Treibstoff), wird Energie frei, aber nicht mehr als vorher hineingesteckt wurde.</p>
+      <div id="tEnergyQ"></div>
+    </div>
+    <div id="he1"></div>
+    <div class="gate"><button class="primary next">Weiter zu den Stoffen ▶</button><span class="hint need"></span></div>
+  </div>
+</section>
+
+<!-- ============ 4 STOFFE ============ -->
+<section class="step" data-s="4">
+  <div class="card">
+    <h2>2 Aufbau und Einteilung von Stoffen</h2>
+    <div class="goal"><b>Du kannst danach:</b> Stoffe in <b>Stoffgemische</b>, <b>Verbindungen</b> und <b>Elemente</b> einteilen.</div>
+    <p>Wasser lässt sich in zwei andere Reinstoffe zerlegen. Das geht nicht bei jedem Reinstoff. Dafür gibt es eine Einteilung:</p>
+    <div class="schema" id="schema"></div>
+    <ul>
+      <li><b>Verbindungen</b> sind Reinstoffe, die durch eine chemische Reaktion in andere Reinstoffe zerlegt werden können.</li>
+      <li><b>Elemente</b> sind Reinstoffe, die man durch chemische Reaktionen nicht weiter zerlegen kann.</li>
+      <li><b>Stoffgemische</b> trennt man durch physikalische Trennverfahren (z. B. Filtrieren, Verdampfen).</li>
+    </ul>
+    <h3>Aufgabe: Ordne zu</h3>
+    <p class="hint">Tippe auf einen Stoff und dann auf die richtige Spalte.</p>
+    <div class="chips" id="chips"></div>
+    <div class="sortgrid" id="bins"></div>
+    <div class="fb" id="sortFb"></div>
+    <div class="task" id="tSimple" style="margin-top:16px"></div>
+    <div id="he2"></div>
+    <div class="gate"><button class="primary next">Weiter zu Dalton ▶</button><span class="hint need"></span></div>
+  </div>
+</section>
+
+<!-- ============ 5 DALTON ============ -->
+<section class="step" data-s="5">
+  <div class="card">
+    <h2>3 Das Atommodell nach Dalton</h2>
+    <div class="goal"><b>Du kannst danach:</b> die Zerlegung von Wasser mit <b>Atomen</b> erklären und sagen, was mit den Atomen bei einer chemischen Reaktion passiert.</div>
+    <p>Der Engländer <b>John Dalton</b> hatte um 1800 die Idee, dass Teilchen aus noch kleineren Bausteinen bestehen, den <b>Atomen</b>:</p>
+    <ol>
+      <li>Elemente bestehen aus kleinsten, nicht mehr teilbaren Teilchen, den <b>Atomen</b>. Atome eines Elements gleichen sich in Masse und Größe. Atome <b>verschiedener</b> Elemente unterscheiden sich darin.</li>
+      <li>Bei chemischen Reaktionen werden die Atome <b>umgruppiert</b>. Sie werden weder zerstört noch neu erzeugt.</li>
+      <li>Verbindungen bestehen aus Atomen von <b>mindestens zwei verschiedenen Elementen</b> in einem bestimmten Mengenverhältnis.</li>
+    </ol>
+    <div class="legend"><span><svg width="26" height="26"><circle cx="13" cy="13" r="12" fill="#e5483b" stroke="#9b2217" stroke-width="1.6"/></svg> Sauerstoff-Atom</span><span><svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="#fff" stroke="#6b7684" stroke-width="1.6"/></svg> Wasserstoff-Atom</span></div>
+    <div id="hypBack" class="hint"></div>
+  </div>
+  <div class="card">
+    <h2>Atom-Werkstatt</h2>
+    <p id="wkTask" class="lead"></p>
+    <svg id="wsvg" class="wsvg" viewBox="0 0 780 300"></svg>
+    <div class="wk" id="wkCtl"></div>
+    <table class="t" id="wkCount"></table>
+    <div class="fb" id="wkFb"></div>
+    <div class="row"><button id="wkRun" class="primary" disabled>Umgruppierung zeigen</button><button id="wkPng" disabled>Bild für mein Heft speichern</button><button id="wkB">Bonus: die Knallgasprobe rückwärts</button></div>
+  </div>
+  <div class="card">
+    <h3>Aufgabe: Welches Teilchenbild zeigt was?</h3>
+    <p class="hint">Blaue und orange Kugeln stehen für Atome zweier verschiedener Elemente.</p>
+    <div class="imgs" id="partImgs"></div>
+    <div id="partSel"></div>
+    <div id="he3"></div>
+    <div class="gate"><button class="primary next">Weiter zum Abschluss ▶</button><span class="hint need"></span></div>
+  </div>
+</section>
+
+<!-- ============ 6 ABSCHLUSS ============ -->
+<section class="step" data-s="6">
+  <div class="card">
+    <h2>Abschluss</h2>
+    <h3>1 · Wie sicher fühlst du dich?</h3>
+    <div id="ampel"></div>
+    <h3>2 · Test im mebis-Kurs (ca. 10–15 Minuten)</h3>
+    <p>Der Test prüft, was du heute gelernt hast. Du bekommst nach jeder Frage eine Rückmeldung. Am Ende steht eine kurze Reflexion.</p>
+    <p><a id="testLink" class="pill" href="#" target="_blank" rel="noopener">Test im mebis-Kurs öffnen</a> <span class="hint" id="testHint"></span></p>
+    <h3>3 · Alle Hefteinträge auf einmal kopieren</h3>
+    <p class="hint">Falls du einen Eintrag vergessen hast: Hier ist alles zusammen.</p>
+    <div class="copyrow"><button id="copyAll" class="primary">Alles in die Zwischenablage kopieren</button><span class="hint" id="copyAllMsg"></span></div>
+    <p class="hint" style="margin-top:14px">Geschafft: Du hast Wasser in zwei neue Stoffe zerlegt und mit Dalton erklärt, was dabei auf Teilchenebene passiert. In der nächsten Doppelstunde geht es um das Periodensystem und um die Frage, was mit der Masse bei einer Reaktion passiert.</p>
+  </div>
+</section>
+
+</main>
+
+<div class="modal" id="wsModal"><div class="box">
+  <h2>Wortspeicher</h2>
+  <ul>
+    <li><b>Reinstoff:</b> besteht nur aus einer Sorte Teilchen (z. B. Wasser).</li>
+    <li><b>Stoffgemisch:</b> mehrere Reinstoffe sind vermischt; durch physikalische Verfahren trennbar.</li>
+    <li><b>chemische Reaktion:</b> aus Ausgangsstoffen (Edukten) entstehen neue Stoffe (Produkte) mit anderen Eigenschaften.</li>
+    <li><b>Zerlegung:</b> aus einem Stoff entstehen durch eine chemische Reaktion mehrere andere Stoffe.</li>
+    <li><b>Verbindung:</b> Reinstoff, der sich chemisch in andere Reinstoffe zerlegen lässt.</li>
+    <li><b>Element:</b> Reinstoff, der sich chemisch nicht weiter zerlegen lässt.</li>
+    <li><b>Atom:</b> kleinster, nicht weiter teilbarer Baustein der Stoffe (Dalton).</li>
+    <li><b>Nachweis:</b> Test, an dem man einen Stoff erkennt (Glimmspanprobe → Sauerstoff, Knallgasprobe → Wasserstoff).</li>
+    <li><b>Hypothese:</b> begründete Vermutung, die man prüfen kann.</li>
+    <li><b>Reaktionsschema:</b> Kurzform mit Pfeil, z. B. Wasser (l) → Sauerstoff (g) + Wasserstoff (g). (s) fest, (l) flüssig, (g) gasförmig.</li>
+  </ul>
+  <button class="primary" id="wsClose">Schließen</button>
+</div></div>
+
+<script>
+/* gemeinsame Zeichenfunktionen (Lernseite + Testbilder) */
+var DRAW = (function () {
+  var COL = { O: ['#e5483b', '#9b2217', 17], H: ['#ffffff', '#6b7684', 11], A: ['#3b82d6', '#1d4f91', 16], B: ['#f59e0b', '#a35f00', 11] };
+  var MOLS = {
+    H2O: [['O', 0, -4], ['H', -19, 12], ['H', 19, 12]],
+    H2: [['H', -11, 0], ['H', 11, 0]],
+    O2: [['O', -17, 0], ['O', 17, 0]],
+    A2: [['A', -16, 0], ['A', 16, 0]],
+    B2: [['B', -11, 0], ['B', 11, 0]],
+    AB2: [['A', 0, -4], ['B', -20, 13], ['B', 20, 13]]
+  };
+  function atom(t, x, y, extra) {
+    var c = COL[t];
+    return '<circle cx="' + x + '" cy="' + y + '" r="' + c[2] + '" fill="' + c[0] + '" stroke="' + c[1] + '" stroke-width="1.6" data-t="' + t + '"' + (extra || '') + '/>';
+  }
+  function mol(name, x, y) {
+    return MOLS[name].map(function (a) { return atom(a[0], x + a[1], y + a[2]); }).join('');
+  }
+  function grid(names, x0, y0, cols, dx, dy) {
+    return names.map(function (n, i) { return mol(n, x0 + (i % cols) * dx, y0 + Math.floor(i / cols) * dy); }).join('');
+  }
+  function rep(n, k) { var a = []; for (var i = 0; i < k; i++) a.push(n); return a; }
+  function frame(inner, w, h, label) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" font-family="Segoe UI,Arial,sans-serif">' +
+      '<rect x="1" y="1" width="' + (w - 2) + '" height="' + (h - 2) + '" rx="10" fill="#fff" stroke="#8aa0b8" stroke-width="2"/>' + inner +
+      (label ? '<text x="14" y="26" font-size="20" font-weight="700" fill="#12304f">' + label + '</text>' : '') + '</svg>';
+  }
+  /* Teilchenbild: kind = element | verbindung | gemisch */
+  function part(kind, label) {
+    var names;
+    if (kind === 'element') names = rep('A2', 6);
+    else if (kind === 'verbindung') names = rep('AB2', 6);
+    else names = ['A2', 'B2', 'B2', 'A2', 'B2', 'A2'];
+    var seq = kind === 'gemisch' ? ['A2', 'B2', 'A2', 'B2', 'B2', 'A2'] : names;
+    return frame(grid(seq, 52, 62, 3, 78, 56), 270, 150, label);
+  }
+  /* Hofmann-Skizze mit Gasvolumina (mL) */
+  function hofmann(vMinus, vPlus, vMax) {
+    var H = 170, top = 30, per = H / (vMax || 20);
+    function tube(x, v, lab) {
+      var g = '<rect x="' + x + '" y="' + top + '" width="34" height="' + H + '" fill="#f2f8ff" stroke="#44617f" stroke-width="2"/>';
+      g += '<rect x="' + (x + 1) + '" y="' + (top + 1 + (H - 2) - 0) + '" width="0" height="0"/>';
+      var hg = v * per;
+      g += '<rect x="' + (x + 1) + '" y="' + (top + 1) + '" width="32" height="' + (H - 2 - hg) + '" fill="#d6ecff"/>';
+      g += '<rect x="' + (x + 1) + '" y="' + (top + 1 + H - 2 - hg) + '" width="32" height="' + hg + '" fill="#fff6c9"/>';
+      for (var i = 0; i <= (vMax || 20); i += 5) {
+        var y = top + H - i * per;
+        g += '<line x1="' + (x + 34) + '" y1="' + y + '" x2="' + (x + 44) + '" y2="' + y + '" stroke="#44617f"/><text x="' + (x + 48) + '" y="' + (y + 4) + '" font-size="12" fill="#12304f">' + i + '</text>';
+      }
+      g += '<text x="' + (x - 4) + '" y="' + (top + H + 24) + '" font-size="14" font-weight="700" fill="#12304f">' + lab + '</text>';
+      return g;
+    }
+    var inner = tube(50, vMinus, 'Minuspol') + tube(190, vPlus, 'Pluspol') +
+      '<text x="14" y="20" font-size="12" fill="#5b6b7c">Gasvolumen in mL</text>';
+    return frame(inner, 290, 250);
+  }
+  /* Gleichungsbilder A-D (Zerlegung von 2 Wasser-Teilchen) */
+  function eq(kind, label) {
+    var left = mol('H2O', 50, 62) + mol('H2O', 120, 62);
+    var rights = {
+      ok: mol('H2', 240, 55) + mol('H2', 240, 100) + mol('O2', 330, 78),
+      fewH: mol('H2', 250, 75) + mol('O2', 330, 75),
+      oneO: mol('H2', 240, 60) + mol('H2', 290, 60) + mol('H2', 340, 60) + mol('O2', 290, 105),
+      water: mol('H2O', 260, 75) + mol('H2O', 335, 75)
+    };
+    var inner = left + '<text x="165" y="86" font-size="26" fill="#12304f">→</text>' + rights[kind];
+    return frame(inner, 380, 130, label);
+  }
+  return { atom: atom, mol: mol, grid: grid, part: part, hofmann: hofmann, eq: eq, COL: COL, MOLS: MOLS, frame: frame };
+})();
+if (typeof module !== 'undefined') module.exports = DRAW;
+
+</script>
+<script>
+(function(){
+'use strict';
+var MEBIS_TEST_URL = ''; /* hier den Link zum mebis-Test eintragen (optional) */
+var $ = function(id){ return document.getElementById(id); };
+var $$ = function(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+var shuffle = function(a){ a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+var esc = function(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+
+var STEPS = [
+  { t: 'Start', min: 3 }, { t: '1 Vermutung', min: 5 }, { t: '2 Versuch', min: 20 }, { t: '3 Auswertung', min: 15 },
+  { t: '4 Stoffe', min: 15 }, { t: '5 Dalton', min: 20 }, { t: '6 Abschluss', min: 15 }
+];
+var S = { step: 0, max: 0, rows: [], minus: 0, H2: false, O2: false, simDone: false, fallback: false,
+  vFixed: false, vWhat: null, vGas: [], vRatio: null, ok: {}, ampel: {}, hypText: '' };
+
+/* ---------- Navigation ---------- */
+function need(i) {
+  switch (i) {
+    case 1: return S.vFixed ? '' : 'Beantworte die drei Fragen und klicke „Vermutung festlegen“.';
+    case 2: return ((S.simDone && S.rows.length >= 3) || S.fallback) ? '' : 'Mindestens 3 Messwerte notieren, beide Gase nachweisen, „Versuch beenden“ klicken.';
+    case 3: { var m = []; ['pole','ratio','reason','hyp','energy','he1'].forEach(function(k){ if (!S.ok[k]) m.push(k); });
+      return m.length ? 'Noch offen: ' + m.map(function(k){ return {pole:'a)',ratio:'b)',reason:'c)',hyp:'d)',energy:'e)',he1:'Hefteintrag 1'}[k]; }).join(', ') : ''; }
+    case 4: { var m4 = []; ['sort','simple','he2'].forEach(function(k){ if (!S.ok[k]) m4.push(k); });
+      return m4.length ? 'Noch offen: ' + m4.map(function(k){ return {sort:'Zuordnung',simple:'Frage zum Teilchenmodell',he2:'Hefteintrag 2'}[k]; }).join(', ') : ''; }
+    case 5: { var m5 = []; ['werk','part','he3'].forEach(function(k){ if (!S.ok[k]) m5.push(k); });
+      return m5.length ? 'Noch offen: ' + m5.map(function(k){ return {werk:'Atom-Werkstatt (inkl. Umgruppierung zeigen)',part:'Teilchenbilder',he3:'Hefteintrag 3'}[k]; }).join(', ') : ''; }
+  }
+  return '';
+}
+function stepDone(i) { return i < S.max || (i === S.max && !need(i) && i < 6); }
+function renderNav() {
+  var nav = $('nav'); nav.innerHTML = '';
+  STEPS.forEach(function(s, i){
+    var b = document.createElement('button'); b.textContent = s.t;
+    b.className = (i === S.step ? 'cur ' : '') + (stepDone(i) ? 'done' : '');
+    b.disabled = i > S.max; b.addEventListener('click', function(){ go(i); });
+    nav.appendChild(b);
+  });
+  var rest = 0; for (var i = S.step; i < STEPS.length; i++) rest += STEPS[i].min;
+  var t = document.createElement('span'); t.className = 'time'; t.textContent = 'noch ca. ' + rest + ' min'; nav.appendChild(t);
+}
+function go(i) {
+  S.step = i; if (i > S.max) S.max = i;
+  $$('.step').forEach(function(s){ s.classList.toggle('cur', +s.dataset.s === i); });
+  if (i === 3) enterStep3();
+  if (i === 5) enterStep5();
+  renderNav(); refresh(); window.scrollTo(0, 0);
+}
+function refresh() {
+  $$('.step').forEach(function(sec){
+    var i = +sec.dataset.s, n = need(i);
+    $$('.next', sec).forEach(function(b){ b.disabled = !!n; });
+    $$('.need', sec).forEach(function(h){ h.textContent = n; });
+  });
+  $('vFix').disabled = !(S.vWhat && S.vGas.length && S.vRatio) || S.vFixed;
+  renderNav();
+}
+$$('.next').forEach(function(b){ b.addEventListener('click', function(){ go(S.step + 1); }); });
+
+/* ---------- Wortspeicher ---------- */
+$('wsBtn').addEventListener('click', function(){ $('wsModal').classList.add('on'); });
+$('wsClose').addEventListener('click', function(){ $('wsModal').classList.remove('on'); });
+
+/* ---------- Aufgabentypen ---------- */
+/* mc: Einfachauswahl mit Wiederholung bis richtig; multi: Mehrfachauswahl mit Prüfen */
+function mc(el, cfg) {
+  el.classList.add('task');
+  var order = shuffle(cfg.opts.map(function(o, i){ return i; }));
+  var html = '<div class="q">' + cfg.q + '</div>' + (cfg.img ? '<div class="imgs">' + cfg.img + '</div>' : '') + '<div class="opts">';
+  order.forEach(function(i){
+    html += '<label class="opt"><input type="' + (cfg.multi ? 'checkbox' : 'radio') + '" name="' + (cfg.key || el.id) + '" value="' + i + '"> <span>' + cfg.opts[i].t + '</span></label>';
+  });
+  html += '</div>' + (cfg.multi ? '<button class="chk">Prüfen</button>' : '') + (cfg.tip ? '<details class="tip"><summary>Tipp</summary>' + cfg.tip + '</details>' : '') + '<div class="fb"></div>';
+  el.innerHTML = html;
+  var fb = el.querySelector('.fb'), done = false;
+  function fin() { done = true; $$('input', el).forEach(function(x){ x.disabled = true; }); if (cfg.onOk) cfg.onOk(); refresh(); }
+  if (!cfg.multi) {
+    $$('input', el).forEach(function(inp){ inp.addEventListener('change', function(){
+      if (done) return; var o = cfg.opts[+inp.value], lab = inp.closest('.opt');
+      if (o.ok) { lab.classList.add('right'); fb.className = 'fb good'; fb.innerHTML = '✓ ' + (o.fb || 'Richtig.'); fin(); }
+      else { lab.classList.add('wrong'); fb.className = 'fb bad'; fb.innerHTML = '✗ ' + (o.fb || 'Nicht ganz. Versuche es noch einmal.'); setTimeout(function(){ lab.classList.remove('wrong'); inp.checked = false; }, 1400); }
+    }); });
+  } else {
+    el.querySelector('.chk').addEventListener('click', function(){
+      if (done) return; var all = true, msgs = [];
+      $$('input', el).forEach(function(inp){ var o = cfg.opts[+inp.value], lab = inp.closest('.opt'); lab.classList.remove('right','wrong');
+        if (inp.checked !== !!o.ok) { all = false; lab.classList.add('wrong'); if (o.fb) msgs.push(o.fb); } else if (inp.checked) lab.classList.add('right'); });
+      if (all) { fb.className = 'fb good'; fb.innerHTML = '✓ ' + (cfg.okFb || 'Richtig.'); fin(); }
+      else { fb.className = 'fb bad'; fb.innerHTML = '✗ Noch nicht ganz. ' + msgs.join(' '); }
+    });
+  }
+}
+
+/* ---------- 1 Vermutung ---------- */
+function radioBlock(el, q, opts, multi, cb) {
+  el.innerHTML = '<div class="q">' + q + '</div>' + opts.map(function(o){ return '<label class="opt"><input type="' + (multi ? 'checkbox' : 'radio') + '" name="' + el.id + '" value="' + esc(o) + '"> ' + esc(o) + '</label>'; }).join('');
+  el.addEventListener('change', function(){ if (S.vFixed) return;
+    if (multi) cb($$('input:checked', el).map(function(i){ return i.value; })); else cb(($$('input:checked', el)[0] || {}).value);
+    $$('.opt', el).forEach(function(l){ l.classList.toggle('sel', l.querySelector('input').checked); }); refresh(); });
+}
+radioBlock($('vWhat'), 'Was passiert mit dem Wasser?', ['Nichts: Das Wasser bleibt Wasser.', 'Das Wasser verdampft.', 'Aus dem Wasser entstehen neue Stoffe.', 'Das weiß ich nicht.'], false, function(v){ S.vWhat = v; });
+radioBlock($('vGas'), 'Welche Stoffe könnten es sein, falls neue Stoffe entstehen? (mehrere möglich)', ['Wasserstoff', 'Sauerstoff', 'Stickstoff', 'Kohlenstoffdioxid', 'Das weiß ich nicht.'], true, function(v){ S.vGas = v; });
+radioBlock($('vRatio'), 'Falls zwei Gase entstehen: Wie viel von jedem?', ['Beide Gase gleich viel', 'Ein Gas doppelt so viel wie das andere', 'Ein Gas dreimal so viel wie das andere', 'Das weiß ich nicht.'], false, function(v){ S.vRatio = v; });
+$('vFix').addEventListener('click', function(){ S.vFixed = true; $$('#vWhat input,#vGas input,#vRatio input').forEach(function(i){ i.disabled = true; }); $('vHint').textContent = '✓ festgelegt. Nach dem Versuch schaust du, ob du recht hattest.'; refresh(); });
+
+/* ---------- 2 Versuch ---------- */
+var EX_ROWS = [{ t: 20, v0: 6.5, v1: 3 }, { t: 40, v0: 13, v1: 6 }, { t: 60, v0: 19.5, v1: 9 }];
+function tfmt(t) { return Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0'); }
+function renderLive() {
+  var r = S.rows;
+  $('liveRows').innerHTML = r.length ? '<table class="t"><tr><th>Zeit</th><th>linker Schenkel (mL)</th><th>rechter Schenkel (mL)</th></tr>' +
+    r.map(function(x){ return '<tr><td>' + tfmt(x.t) + '</td><td>' + x.v0 + '</td><td>' + x.v1 + '</td></tr>'; }).join('') + '</table>' : 'Noch keine Messwerte.';
+  $('liveGas').textContent = 'Nachgewiesen: Sauerstoff ' + (S.O2 ? '✓' : '–') + ' · Wasserstoff ' + (S.H2 ? '✓' : '–') + (S.simDone ? ' · Versuch beendet ✓' : '');
+}
+window.addEventListener('message', function(e){
+  var d = e.data; if (!d || d.type !== 'wasser-sim') return;
+  S.rows = d.rows || []; S.minus = d.minus || 0; S.H2 = !!d.H2; S.O2 = !!d.O2; S.simDone = !!d.done;
+  renderLive(); refresh();
+});
+$('fsBtn').addEventListener('click', function(){ var w = $('simWrap'); w.classList.toggle('full'); $('fsBtn').textContent = w.classList.contains('full') ? '✕ Vollbild schließen' : '⛶ Vollbild (empfohlen für Tablets)'; });
+$('fallbackBtn').addEventListener('click', function(){ S.fallback = true; if (S.rows.length < 3) { S.rows = EX_ROWS.slice(); S.minus = 0; } S.H2 = S.O2 = true; renderLive(); $('fallbackBtn').textContent = '✓ Beispiel-Messwerte werden verwendet'; refresh(); });
+
+/* ---------- Hefteintrag-Baukasten ---------- */
+var HE = {};
+function gapHTML(text, id) {
+  return text.replace(/\[\[(.+?)\]\]/g, function(_, g){
+    var opts = g.split(';'), right = null;
+    opts = opts.map(function(o){ if (o.slice(-1) === '*') { o = o.slice(0, -1); right = o; } return o; });
+    return '<select data-r="' + esc(right) + '"><option value="">…</option>' + shuffle(opts).map(function(o){ return '<option>' + esc(o) + '</option>'; }).join('') + '</select>';
+  });
+}
+function buildHE(id, title, blocks, key, withTable) {
+  var el = $(id), h = '<div class="he"><h3 class="hh">✏️ ' + title + '</h3><div class="hint">Wähle in jeder Lücke das richtige Wort. Dann kopierst du den Eintrag in dein Heft.</div>';
+  blocks.forEach(function(b){
+    if (b.h2) h += '<div class="hl2">' + b.h2 + '</div>';
+    else if (b.h3) h += '<div class="hl3">' + b.h3 + '</div>';
+    else if (b.p) h += '<p>' + gapHTML(b.p, id) + '</p>';
+    else if (b.table) h += '<div class="hetab"></div>';
+  });
+  h += '<div class="hl3">Eigene Ergänzung (freiwillig)</div><textarea class="own" placeholder="z. B. eine Skizze beschreiben, ein Beispiel, eine Frage an mich selbst …"></textarea>';
+  h += '<div class="copyrow"><button class="primary cpy" disabled>In die Zwischenablage kopieren</button><span class="hint msg">Zuerst alle Lücken richtig ausfüllen.</span></div></div>';
+  el.innerHTML = h; HE[id] = { el: el, key: key };
+  $$('select', el).forEach(function(s){ s.addEventListener('change', function(){
+    s.classList.remove('ok','no'); if (s.value) s.classList.add(s.value === s.dataset.r ? 'ok' : 'no');
+    var all = $$('select', el).every(function(x){ return x.value === x.dataset.r; });
+    S.ok[key] = all; $$('.cpy', el)[0].disabled = !all; $$('.msg', el)[0].textContent = all ? '✓ Alles richtig. Du kannst kopieren.' : 'Rot markierte Lücken noch einmal überlegen.'; refresh(); }); });
+  $$('.cpy', el)[0].addEventListener('click', function(){ copyHE([id], $$('.msg', el)[0]); });
+}
+function heContent(id) {
+  var el = HE[id].el.querySelector('.he'), html = '', plain = '';
+  Array.prototype.forEach.call(el.children, function(c){
+    if (c.classList.contains('hl2')) { html += '<h2>' + c.innerHTML + '</h2>'; plain += '\n' + c.textContent + '\n'; }
+    else if (c.classList.contains('hl3')) { if (/Eigene Erg/.test(c.textContent)) return; html += '<h3>' + c.innerHTML + '</h3>'; plain += '\n' + c.textContent + '\n'; }
+    else if (c.tagName === 'P') { var cl = c.cloneNode(true), vals = $$('select', c).map(function(x){ return x.value; }); $$('select', cl).forEach(function(s, k){ var b = document.createElement('b'); b.textContent = vals[k]; s.replaceWith(b); }); html += '<p>' + cl.innerHTML + '</p>'; plain += cl.textContent + '\n'; }
+    else if (c.classList.contains('hetab')) { var tb = c.querySelector('table'); if (tb) { html += tb.outerHTML; plain += $$('tr', tb).map(function(r){ return $$('th,td', r).map(function(x){ return x.textContent; }).join('\t'); }).join('\n') + '\n'; } }
+    else if (c.tagName === 'TEXTAREA' && c.value.trim()) { html += '<p><i>Meine Ergänzung: ' + esc(c.value) + '</i></p>'; plain += 'Meine Ergänzung: ' + c.value + '\n'; }
+  });
+  return { html: html, plain: plain };
+}
+function copyHE(ids, msgEl) {
+  var html = '', plain = '';
+  ids.forEach(function(id){ var c = heContent(id); html += c.html; plain += c.plain + '\n'; });
+  function ok() { msgEl.textContent = '✓ Kopiert. Jetzt in dein digitales Heft einfügen.'; }
+  function fallback() {
+    var d = document.createElement('div'); d.innerHTML = html; d.style.cssText = 'position:fixed;left:-9999px;top:0;'; document.body.appendChild(d);
+    var r = document.createRange(); r.selectNodeContents(d); var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    var good = false; try { good = document.execCommand('copy'); } catch (e) {} sel.removeAllRanges(); document.body.removeChild(d);
+    if (good) ok(); else msgEl.textContent = 'Kopieren nicht möglich. Markiere den Text selbst und kopiere ihn.';
+  }
+  try {
+    if (navigator.clipboard && window.ClipboardItem) {
+      navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([plain], { type: 'text/plain' }) })]).then(ok, fallback);
+    } else fallback();
+  } catch (e) { fallback(); }
+}
+
+/* ---------- 3 Auswertung ---------- */
+var e3 = false;
+function enterStep3() {
+  var w = S.vWhat ? ('„' + S.vWhat + '“') : '–';
+  $('myVerm').innerHTML = 'Deine Vermutung vor dem Versuch: <b>' + esc(S.vWhat || '–') + '</b> · Stoffe: <b>' + esc(S.vGas.join(', ') || '–') + '</b> · Verhältnis: <b>' + esc(S.vRatio || '–') + '</b>';
+  var rows = S.rows, minus = S.minus;
+  var tab = '<table class="t"><tr><th>Zeit</th><th>Minuspol (mL)</th><th>Pluspol (mL)</th></tr>' + rows.map(function(r){
+    return '<tr><td>' + tfmt(r.t) + '</td><td>' + (minus === 0 ? r.v0 : r.v1) + '</td><td>' + (minus === 0 ? r.v1 : r.v0) + '</td></tr>'; }).join('') + '</table>';
+  var fillTab = function(){ $$('.hetab').forEach(function(x){ x.innerHTML = tab; }); };
+  fillTab();
+  if (e3) return; e3 = true;
+  /* a */
+  mc($('tPole'), { q: 'a) An welchem Pol entsteht Wasserstoff, an welchem Sauerstoff? (Schau auf deine Nachweise.)', key: 'a', opts: [
+    { t: 'Minuspol: Wasserstoff · Pluspol: Sauerstoff', ok: true, fb: 'Richtig: Am Minuspol (Knallgasprobe: „Plopp“) entsteht Wasserstoff, am Pluspol (Glimmspan flammt auf) Sauerstoff.' },
+    { t: 'Minuspol: Sauerstoff · Pluspol: Wasserstoff', fb: 'Vertauscht. Welcher Schenkel hat bei der Knallgasprobe „Plopp“ gemacht, und welcher Pol gehört zu ihm?' },
+    { t: 'An beiden Polen entsteht Wasserstoff.', fb: 'Du hast zwei verschiedene Nachweise gemacht und zwei verschiedene Ergebnisse.' }],
+    tip: 'Nachweis: Knallgasprobe → Wasserstoff, Glimmspanprobe → Sauerstoff. Welcher Schenkel hängt am Minuspol?', onOk: function(){ S.ok.pole = true; } });
+  /* b */
+  mc($('tRatio'), { q: 'b) Vergleiche die Gasvolumina in deiner Tabelle (Hefteintrag unten). Wasserstoff : Sauerstoff verhält sich ungefähr wie …', key: 'b', opts: [
+    { t: '2 : 1', ok: true, fb: 'Richtig: Es entsteht etwa doppelt so viel Wasserstoff wie Sauerstoff. Die Werte weichen etwas ab, weil sich Sauerstoff besser im Wasser löst.' },
+    { t: '1 : 1', fb: 'Rechne nach: Teile das größere Volumen durch das kleinere.' },
+    { t: '1 : 2', fb: 'Umgekehrt: Welches Gas hat das größere Volumen, Wasserstoff oder Sauerstoff?' },
+    { t: '3 : 1', fb: 'Das wäre dreimal so viel. Rechne an deinen Werten nach.' }], onOk: function(){ S.ok.ratio = true; } });
+  /* c */
+  mc($('tReason'), { q: 'c) Begründe: Warum ist die Zerlegung von Wasser <b>kein</b> physikalischer Vorgang, sondern eine chemische Reaktion? Wähle <b>alle</b> richtigen Aussagen.', multi: true, key: 'c', opts: [
+    { t: 'Es entstehen neue Stoffe (Wasserstoff und Sauerstoff) mit anderen Eigenschaften als Wasser.', ok: true },
+    { t: 'Die Gase lassen sich mit Knallgasprobe und Glimmspanprobe nachweisen, Wasser verhält sich bei diesen Proben anders.', ok: true },
+    { t: 'Das Wasser wird nur warm und verdampft.', fb: 'Beim Verdampfen bleibt Wasser Wasser. Hier entstehen aber Gase, die kein Wasser sind.' },
+    { t: 'Die Stoffe lassen sich durch Filtrieren wieder trennen.', fb: 'Filtrieren trennt Stoffgemische (physikalisch). Wasser ist ein Reinstoff.' },
+    { t: 'Dem Wasser wird Energie zugeführt, und es verschwindet dabei (Stoffumsatz).', ok: true }],
+    okFb: 'Richtig: neue Stoffe mit anderen Eigenschaften (Stoffumsatz) plus Energieumsatz sind die Kennzeichen einer chemischen Reaktion.', onOk: function(){ S.ok.reason = true; } });
+  /* d */
+  var ta = $('hypText');
+  ta.addEventListener('input', function(){ var n = ta.value.trim().length; $('hypHint').textContent = n >= 40 ? '' : n + ' / 40 Zeichen'; $('hypBtn').disabled = n < 40 || S.ok.hyp; });
+  $('hypBtn').addEventListener('click', function(){
+    S.hypText = ta.value.trim(); S.ok.hyp = true; ta.disabled = true; $('hypBtn').disabled = true;
+    $('hypFb').innerHTML = '<div class="fb good">✓ Abgegeben. Vergleiche mit dieser Beispiel-Hypothese:</div><div class="goal" style="margin-top:6px">Die Gase stammen <b>aus dem Wasser selbst</b>, nicht aus der Luft: Vor dem Versuch war kein Wasserstoff und kein Sauerstoff im Gerät. Wenn doppelt so viel Wasserstoff wie Sauerstoff entsteht, könnte jedes Wasser-Teilchen aus <b>zwei Wasserstoff-Bausteinen und einem Sauerstoff-Baustein</b> bestehen. Dann bekommt man immer das Verhältnis 2 : 1. Genau diese Idee prüfst du in Abschnitt 3.</div>';
+    refresh(); });
+  /* e */
+  mc($('tEnergyQ'), { q: 'Was folgt daraus für die Herstellung von Wasserstoff aus Wasser?', key: 'e', opts: [
+    { t: 'Man muss dafür viel Energie (z. B. Strom) aufwenden. Das macht „grünen“ Wasserstoff teuer.', ok: true, fb: 'Richtig. Beim Verbrennen bekommt man höchstens so viel Energie zurück, wie man hineingesteckt hat. Im Alltag geht noch etwas verloren.' },
+    { t: 'Wasserstoff aus Wasser ist kostenlos, weil Wasser überall vorhanden ist.', fb: 'Das Wasser ist günstig, aber die Zerlegung braucht ständig Energie. Schau auf die Stromquelle im Versuch.' },
+    { t: 'Bei der Zerlegung wird Energie frei, die man nutzen kann.', fb: 'Umgekehrt: Ohne Strom entsteht kein Gas.' }], onOk: function(){ S.ok.energy = true; } });
+  buildHE('he1', 'Hefteintrag 1', [
+    { h2: '1 Zerlegung von Wasser (Hofmann-Versuch)' },
+    { h3: '1.1 Beobachtung' },
+    { p: 'Beim Anlegen einer Spannung entstehen an [[beiden Metallstäben*;einem Metallstab;keinem Metallstab]] Gasblasen. Das Gasvolumen am Minuspol ist etwa [[doppelt*;halb;gleich]] so groß wie am Pluspol (Verhältnis [[2 : 1*;1 : 2;1 : 1]]).' },
+    { table: 1 },
+    { h3: '1.2 Nachweise' },
+    { p: 'Minuspol: [[Knallgasprobe*;Glimmspanprobe]] positiv (dumpfes „Plopp“), das Gas ist [[Wasserstoff*;Sauerstoff]].' },
+    { p: 'Pluspol: [[Glimmspanprobe*;Knallgasprobe]] positiv (Span flammt hell auf), das Gas ist [[Sauerstoff*;Wasserstoff]].' },
+    { h3: '1.3 Ergebnis' },
+    { p: 'Wasser wird durch [[elektrische Energie*;Kälte;Filtern]] in zwei neue Stoffe zerlegt. Es ist eine [[chemische Reaktion*;physikalischer Vorgang]], denn es entstehen [[neue Stoffe*;keine neuen Stoffe]] mit anderen Eigenschaften.' },
+    { p: 'Reaktionsschema: Wasser (l) → Sauerstoff (g) + Wasserstoff (g)' },
+    { p: 'Für die Zerlegung muss ständig [[Energie*;Wasser;Luft]] zugeführt werden. Daher ist die Herstellung von Wasserstoff [[energieaufwendig*;kostenlos]].' }
+  ], 'he1');
+  fillTab();
+}
+
+/* ---------- 4 Stoffe ---------- */
+(function(){
+  $('schema').innerHTML = '<svg viewBox="0 0 640 220" font-family="Segoe UI,Arial" font-size="15">' +
+    '<defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9z" fill="#44617f"/></marker><marker id="ar2" markerWidth="9" markerHeight="9" refX="2" refY="4.5" orient="auto"><path d="M9 0 L0 4.5 L9 9z" fill="#44617f"/></marker></defs>' +
+    '<rect x="270" y="6" width="100" height="34" rx="6" fill="#16a34a"/><text x="320" y="29" fill="#fff" text-anchor="middle" font-weight="700">Stoffe</text>' +
+    '<path d="M320 40 V60 M120 60 H520 M120 60 V76 M520 60 V76" stroke="#44617f" fill="none" stroke-width="2"/>' +
+    '<rect x="40" y="76" width="160" height="34" rx="6" fill="#b9987c"/><text x="120" y="99" fill="#fff" text-anchor="middle" font-weight="700">Stoffgemische</text>' +
+    '<rect x="440" y="76" width="160" height="34" rx="6" fill="#4f46a5"/><text x="520" y="99" fill="#fff" text-anchor="middle" font-weight="700">Reinstoffe</text>' +
+    '<path d="M200 93 H438" stroke="#44617f" stroke-dasharray="6 4" stroke-width="2" marker-end="url(#ar)"/><text x="320" y="86" text-anchor="middle" fill="#12304f">physikalische Trennverfahren</text>' +
+    '<path d="M520 110 V128 M320 128 H540 M320 128 V146 M540 128 V146" stroke="#44617f" fill="none" stroke-width="2"/>' +
+    '<rect x="250" y="146" width="140" height="34" rx="6" fill="#dc2626"/><text x="320" y="169" fill="#fff" text-anchor="middle" font-weight="700">Verbindungen</text>' +
+    '<rect x="470" y="146" width="140" height="34" rx="6" fill="#2563eb"/><text x="540" y="169" fill="#fff" text-anchor="middle" font-weight="700">Elemente</text>' +
+    '<path d="M392 163 H468" stroke="#44617f" stroke-dasharray="6 4" stroke-width="2" marker-end="url(#ar)" marker-start="url(#ar2)"/><text x="430" y="206" text-anchor="middle" fill="#12304f" font-size="13">chemische Reaktionen</text>' +
+    '</svg>';
+  var ITEMS = [
+    { n: 'Eisen', c: 'E', h: 'Eisen lässt sich nicht weiter zerlegen: ein Element.' },
+    { n: 'Schwefel', c: 'E', h: 'Schwefel lässt sich nicht weiter zerlegen: ein Element.' },
+    { n: 'Eisen-Schwefel-Gemisch', c: 'G', h: 'Mit einem Magneten kann man Eisen wieder abtrennen (physikalisch). Das ist ein Stoffgemisch.' },
+    { n: 'Kochsalzlösung', c: 'G', h: 'Salz und Wasser lassen sich durch Verdampfen trennen: ein Stoffgemisch.' },
+    { n: 'Eisensulfid', c: 'V', h: 'Eisensulfid entsteht bei einer chemischen Reaktion aus Eisen und Schwefel und ist ein Reinstoff aus zwei Elementen: eine Verbindung.' },
+    { n: 'Wasser', c: 'V', h: 'Wasser lässt sich in Wasserstoff und Sauerstoff zerlegen: eine Verbindung.' },
+    { n: 'Sauerstoff', c: 'E', h: 'Sauerstoff entsteht bei der Zerlegung von Wasser und lässt sich nicht weiter zerlegen: ein Element.' },
+    { n: 'Magnesiumoxid', c: 'V', h: 'Magnesiumoxid entsteht aus Magnesium und Sauerstoff und kann wieder zerlegt werden: eine Verbindung.' },
+    { n: 'Luft', c: 'G', h: 'Luft besteht aus mehreren Gasen (z. B. Sauerstoff, Stickstoff): ein Stoffgemisch.' }
+  ];
+  var CATS = [['G', 'Stoffgemisch'], ['V', 'Verbindung'], ['E', 'Element']], sel = null, placed = 0;
+  var chips = $('chips'), bins = $('bins');
+  shuffle(ITEMS).forEach(function(it){ var c = document.createElement('div'); c.className = 'chip'; c.textContent = it.n; c.dataset.n = it.n;
+    c.addEventListener('click', function(){ if (c.classList.contains('good')) return; $$('.chip.sel').forEach(function(x){ x.classList.remove('sel'); }); c.classList.add('sel'); sel = it; $$('.bin').forEach(function(b){ b.classList.add('hot'); }); }); chips.appendChild(c); });
+  CATS.forEach(function(k){ var b = document.createElement('div'); b.className = 'bin'; b.innerHTML = '<h4>' + k[1] + '</h4><div class="chips"></div>';
+    b.addEventListener('click', function(){ if (!sel) return; var chip = $$('.chip.sel')[0];
+      if (sel.c === k[0]) { chip.classList.remove('sel'); chip.classList.add('good'); b.querySelector('.chips').appendChild(chip); $('sortFb').className = 'fb good'; $('sortFb').textContent = '✓ ' + sel.h; sel = null; placed++; $$('.bin').forEach(function(x){ x.classList.remove('hot'); });
+        if (placed === ITEMS.length) { S.ok.sort = true; $('sortFb').textContent += ' Alle richtig zugeordnet!'; refresh(); } }
+      else { chip.classList.add('shake'); setTimeout(function(){ chip.classList.remove('shake'); }, 400); $('sortFb').className = 'fb bad'; $('sortFb').textContent = '✗ ' + sel.n + ' gehört nicht in diese Spalte. Tipp: Lässt sich der Stoff mit physikalischen Verfahren trennen? Ist es ein Reinstoff, der sich chemisch zerlegen lässt?'; } });
+    bins.appendChild(b); });
+  /* Teilchenmodell reicht nicht */
+  mc($('tSimple'), { q: 'Das einfache Teilchenmodell kennst du: Jeder Stoff besteht aus unteilbaren Kugeln. Bei der Zerlegung wird aus Wasser-Teilchen etwas ganz anderes. Reicht das einfache Modell aus, um das zu erklären?',
+    img: '<svg viewBox="0 0 420 110" width="420" height="110" font-family="Segoe UI,Arial" font-size="14"><rect x="1" y="1" width="418" height="108" rx="10" fill="#fff" stroke="#8aa0b8" stroke-width="2"/><circle cx="60" cy="55" r="22" fill="#3b82d6"/><circle cx="110" cy="55" r="22" fill="#3b82d6"/><text x="165" y="62" font-size="26">→</text><circle cx="230" cy="55" r="22" fill="#e5483b"/><text x="262" y="60" font-size="22">+</text><circle cx="310" cy="55" r="22" fill="#9aa5b1"/><circle cx="360" cy="55" r="22" fill="#9aa5b1"/><text x="40" y="100" font-size="12" fill="#12304f">Wasser</text><text x="212" y="100" font-size="12" fill="#12304f">Sauerstoff</text><text x="300" y="100" font-size="12" fill="#12304f">Wasserstoff</text></svg>',
+    opts: [
+      { t: 'Nein. Unteilbare Kugeln können sich nicht in Kugeln anderer Stoffe verwandeln. Die Teilchen müssen aus kleineren Bausteinen bestehen.', ok: true, fb: 'Richtig. Genau diese Idee führt zum Atommodell von Dalton (Abschnitt 3).' },
+      { t: 'Ja. Die Kugeln verwandeln sich einfach in andere Kugeln.', fb: 'Dann würde ein Stoff in einen ganz anderen übergehen, ohne dass man erklären kann, warum doppelt so viel Wasserstoff entsteht.' },
+      { t: 'Ja. Die Kugeln verschwinden beim Zerlegen einfach.', fb: 'Teilchen verschwinden nicht. Die entstehenden Gase muss man ja auch erklären.' }],
+    onOk: function(){ S.ok.simple = true; } });
+  buildHE('he2', 'Hefteintrag 2', [
+    { h2: '2 Einteilung der Stoffe' },
+    { h3: '2.1 Reinstoffe und Stoffgemische' },
+    { p: 'Ein [[Reinstoff*;Stoffgemisch]] besteht nur aus einer Sorte Teilchen. Ein [[Stoffgemisch*;Reinstoff]] lässt sich durch [[physikalische Trennverfahren*;chemische Reaktionen]] in Reinstoffe trennen.' },
+    { h3: '2.2 Verbindungen und Elemente' },
+    { p: '[[Verbindungen*;Elemente]] sind Reinstoffe, die durch eine chemische Reaktion in andere Reinstoffe zerlegt werden können. [[Elemente*;Verbindungen]] lassen sich nicht weiter zerlegen.' },
+    { p: 'Beispiel: Wasser ist eine [[Verbindung*;Element]]. Sauerstoff und Wasserstoff sind [[Elemente*;Verbindungen]]. Luft ist ein [[Stoffgemisch*;Reinstoff]].' },
+    { p: 'Das einfache Teilchenmodell reicht nicht aus, weil Teilchen bei einer chemischen Reaktion [[neu entstehen*;gleich bleiben]]. Man braucht ein Modell mit [[kleineren Bausteinen*;größeren Kugeln]].' }
+  ], 'he2');
+})();
+
+/* ---------- 5 Dalton + Atom-Werkstatt ---------- */
+var W = { cfg: null, counts: {}, animated: false };
+var CFG = {
+  A: { task: 'Wasser wird zerlegt. Links siehst du 2 Wasser-Teilchen. Baue rechts die entstehenden Teilchen so, dass <b>kein Atom verschwindet und keins dazukommt</b>.',
+    left: ['H2O', 'H2O'], opts: [['H2', 'Wasserstoff-Teilchen (2 H-Atome)'], ['O2', 'Sauerstoff-Teilchen (2 O-Atome)']], target: { H2: 2, O2: 1 } },
+  B: { task: 'Bonus (Knallgasprobe): Wasserstoff und Sauerstoff reagieren zu Wasser. Links siehst du 2 Wasserstoff-Teilchen und 1 Sauerstoff-Teilchen. Wie viele Wasser-Teilchen entstehen?',
+    left: ['H2', 'H2', 'O2'], opts: [['H2O', 'Wasser-Teilchen (1 O-Atom, 2 H-Atome)']], target: { H2O: 2 } }
+};
+function atomCount(names) { var c = { O: 0, H: 0 }; names.forEach(function(n){ DRAW.MOLS[n].forEach(function(a){ c[a[0]]++; }); }); return c; }
+function rightList() { var l = []; W.cfg.opts.forEach(function(o){ for (var i = 0; i < (W.counts[o[0]] || 0); i++) l.push(o[0]); }); return l; }
+function posOf(names, x0, y0) { return names.map(function(n, i){ return { n: n, x: x0 + (i % 3) * 110, y: y0 + Math.floor(i / 3) * 90 }; }); }
+function drawW() {
+  var svg = $('wsvg'), lp = posOf(W.cfg.left, 70, 80), rl = rightList(), rp = posOf(rl, 470, 80);
+  var h = '<rect x="6" y="6" width="340" height="288" rx="10" fill="#fafcff" stroke="#9fb3c8" stroke-width="2"/><rect x="434" y="6" width="340" height="288" rx="10" fill="#fafcff" stroke="#9fb3c8" stroke-width="2"/>' +
+    '<text x="176" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#12304f">vorher</text><text x="604" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#12304f">nachher</text>' +
+    '<text x="390" y="160" text-anchor="middle" font-size="34" fill="#12304f">→</text>';
+  h += '<g id="gL">' + lp.map(function(p){ return DRAW.mol(p.n, p.x, p.y); }).join('') + '</g>';
+  h += '<g id="gR" opacity="1">' + rp.map(function(p){ return DRAW.mol(p.n, p.x, p.y); }).join('') + '</g><g id="gF"></g>';
+  svg.innerHTML = h; W.animated = false;
+}
+function wCtl() {
+  var el = $('wkCtl'); el.innerHTML = '';
+  W.cfg.opts.forEach(function(o){ var d = document.createElement('div'); d.className = 'ctl'; d.innerHTML = '<button data-d="-1">−</button><b>' + (W.counts[o[0]] || 0) + '</b><button data-d="1">+</button><span>' + o[1] + '</span>';
+    $$('button', d).forEach(function(b){ b.addEventListener('click', function(){ var v = (W.counts[o[0]] || 0) + (+b.dataset.d); if (v < 0 || v > 6) return; W.counts[o[0]] = v; wUpdate(); }); }); el.appendChild(d); });
+}
+function wUpdate() {
+  wCtl(); drawW();
+  var l = atomCount(W.cfg.left), r = atomCount(rightList());
+  $('wkCount').innerHTML = '<tr><th></th><th>Sauerstoff-Atome</th><th>Wasserstoff-Atome</th></tr><tr><td>vorher</td><td>' + l.O + '</td><td>' + l.H + '</td></tr><tr><td>nachher</td><td>' + r.O + '</td><td>' + r.H + '</td></tr>';
+  var ok = l.O === r.O && l.H === r.H && rightList().length > 0, fb = $('wkFb');
+  if (!rightList().length) { fb.className = 'fb'; fb.textContent = ''; }
+  else if (ok) { fb.className = 'fb good'; fb.textContent = '✓ Die Atome stimmen überein. Klicke auf „Umgruppierung zeigen“.'; }
+  else { var m = []; if (r.O !== l.O) m.push('Sauerstoff-Atome: vorher ' + l.O + ', nachher ' + r.O); if (r.H !== l.H) m.push('Wasserstoff-Atome: vorher ' + l.H + ', nachher ' + r.H); fb.className = 'fb bad'; fb.textContent = '✗ Atome werden weder erzeugt noch zerstört. ' + m.join('; ') + '.'; }
+  $('wkRun').disabled = !ok; W.ok = ok;
+}
+function wLoad(k) {
+  W.key = k; W.cfg = CFG[k]; W.counts = {}; $('wkTask').innerHTML = W.cfg.task; wUpdate(); $('wkPng').disabled = true;
+}
+$('wkB').addEventListener('click', function(){ wLoad('B'); $('wkB').disabled = true; });
+$('wkRun').addEventListener('click', function(){
+  var gL = $('gL'), gR = $('gR'), gF = $('gF'); var left = $$('circle', gL), right = $$('circle', gR);
+  gR.setAttribute('opacity', '0.18'); gL.setAttribute('opacity', '0.18'); gF.innerHTML = '';
+  var avail = right.slice(), fl = [];
+  left.forEach(function(c){ var t = c.dataset.t, ti = avail.findIndex(function(x){ return x.dataset.t === t; }); if (ti < 0) return; var tg = avail.splice(ti, 1)[0];
+    var f = c.cloneNode(true); f.style.transition = 'transform 1.8s ease-in-out'; gF.appendChild(f); fl.push([f, tg, c]); });
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ fl.forEach(function(p){ var dx = +p[1].getAttribute('cx') - +p[2].getAttribute('cx'), dy = +p[1].getAttribute('cy') - +p[2].getAttribute('cy'); p[0].style.transform = 'translate(' + dx + 'px,' + dy + 'px)'; }); }); });
+  $('wkRun').disabled = true;
+  setTimeout(function(){ $('wkPng').disabled = false; W.animated = true; if (W.key === 'A') { S.ok.werk = true; } $('wkFb').className = 'fb good'; $('wkFb').textContent = '✓ Die Atome wurden nur umgruppiert. Es sind genau so viele Atome wie vorher. Dalton: „Atome werden weder erzeugt noch zerstört.“'; $('wkRun').disabled = false; refresh(); }, 2000);
+});
+$('wkPng').addEventListener('click', function(){
+  var svg = $('wsvg').cloneNode(true); svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg'); svg.setAttribute('width', 1560); svg.setAttribute('height', 600); svg.removeAttribute('class');
+  var f = $$('#gF circle', svg); f.forEach(function(c){ c.style.transition = 'none'; });
+  var xml = new XMLSerializer().serializeToString(svg), img = new Image();
+  img.onload = function(){ var cv = document.createElement('canvas'); cv.width = 1560; cv.height = 600; var cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, 1560, 600); cx.drawImage(img, 0, 0, 1560, 600);
+    cv.toBlob(function(b){ var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'Atom-Werkstatt-Wasser.png'; a.click(); }); };
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+});
+var e5 = false;
+function enterStep5() {
+  $('hypBack').innerHTML = S.hypText ? '<b>Deine Hypothese aus Schritt 3:</b> „' + esc(S.hypText) + '“<br>Passt sie zu Daltons Idee? Prüfe es in der Atom-Werkstatt.' : '';
+  if (e5) return; e5 = true; wLoad('A');
+  /* Teilchenbilder */
+  var kinds = shuffle(['element', 'verbindung', 'gemisch']), letters = ['A', 'B', 'C'], html = '', sel = '';
+  kinds.forEach(function(k, i){ html += '<div>' + DRAW.part(k, 'Stoff ' + letters[i]) + '</div>'; });
+  $('partImgs').innerHTML = html;
+  var rows = kinds.map(function(k, i){ return '<div class="row" style="margin:8px 0"><b>Stoff ' + letters[i] + ' ist ein …</b> <select class="ps" data-r="' + k + '"><option value="">wähle</option><option value="element">Element</option><option value="verbindung">Verbindung</option><option value="gemisch">Stoffgemisch</option></select> <span class="hint pf"></span></div>'; }).join('');
+  $('partSel').innerHTML = rows + '<div class="fb" id="partFb"></div>';
+  var hints = { element: 'Alle Teilchen bestehen nur aus Atomen einer Sorte (hier: blau).', verbindung: 'Jedes Teilchen besteht aus Atomen verschiedener Elemente (blau und orange), und alle Teilchen sind gleich.', gemisch: 'Zwei Sorten Teilchen liegen nebeneinander: Das sind zwei Reinstoffe, die gemischt sind.' };
+  $$('.ps').forEach(function(s){ s.addEventListener('change', function(){ var pf = s.parentNode.querySelector('.pf');
+    if (s.value === s.dataset.r) { s.style.borderColor = '#15803d'; pf.textContent = '✓ ' + hints[s.dataset.r]; } else { s.style.borderColor = '#b91c1c'; pf.textContent = '✗ Schau genau: Wie viele Sorten Teilchen siehst du, und aus wie vielen Atomsorten besteht ein Teilchen?'; }
+    S.ok.part = $$('.ps').every(function(x){ return x.value === x.dataset.r; }); if (S.ok.part) $('partFb').innerHTML = '<span class="fb good">✓ Alle richtig.</span>'; refresh(); }); });
+  buildHE('he3', 'Hefteintrag 3', [
+    { h2: '3 Das Atommodell nach Dalton' },
+    { h3: '3.1 Aussagen des Modells' },
+    { p: 'Elemente bestehen aus kleinsten, nicht mehr teilbaren Teilchen, den [[Atomen*;Molekülen;Kristallen]]. Atome verschiedener Elemente unterscheiden sich in [[Masse und Größe*;Farbe und Geruch]].' },
+    { p: 'Verbindungen bestehen aus Atomen von [[mindestens zwei*;nur einem]] verschiedenen Elementen in einem bestimmten Mengenverhältnis.' },
+    { h3: '3.2 Chemische Reaktion auf Teilchenebene' },
+    { p: 'Bei einer chemischen Reaktion werden die Atome [[umgruppiert*;zerstört;neu erzeugt]]. Die Zahl der Atome jeder Sorte bleibt [[gleich*;nicht gleich]].' },
+    { p: 'Zerlegung von Wasser: 2 Wasser-Teilchen → 2 Wasserstoff-Teilchen + 1 Sauerstoff-Teilchen. Ein Wasser-Teilchen besteht aus [[1 Sauerstoff-Atom und 2 Wasserstoff-Atomen*;2 Sauerstoff-Atomen und 1 Wasserstoff-Atom;1 Sauerstoff-Atom und 1 Wasserstoff-Atom]]. Deshalb entsteht [[doppelt*;halb so viel]] so viel Wasserstoff wie Sauerstoff (2 : 1).' }
+  ], 'he3');
+}
+
+/* ---------- 6 Abschluss ---------- */
+(function(){
+  var AREAS = [['w', 'Wasser wird durch Strom zerlegt (chemische Reaktion, Nachweise)', 'Gehe zu Schritt 2 und 3 zurück und wiederhole die Nachweise. Frage sonst eine Mitschülerin oder einen Mitschüler.'],
+    ['s', 'Element, Verbindung, Stoffgemisch unterscheiden', 'Gehe zu Schritt 4 zurück und sortiere noch einmal. Achte darauf, ob sich ein Reinstoff chemisch zerlegen lässt.'],
+    ['d', 'Zerlegung von Wasser mit dem Atommodell von Dalton erklären', 'Gehe zu Schritt 5 zurück und baue die Atom-Werkstatt noch einmal. Zähle die Atome vorher und nachher.']];
+  var h = '';
+  AREAS.forEach(function(a){ h += '<div class="task"><div class="q">' + a[1] + '</div><div class="ampel" data-k="' + a[0] + '"><button class="g">🟢 sicher</button><button class="y">🟡 teilweise</button><button class="r">🔴 unsicher</button></div><div class="hint fbA"></div></div>'; });
+  $('ampel').innerHTML = h;
+  $$('.ampel').forEach(function(box, i){ $$('button', box).forEach(function(b){ b.addEventListener('click', function(){
+    $$('button', box).forEach(function(x){ x.classList.remove('sel'); }); b.classList.add('sel'); S.ampel[box.dataset.k] = b.className.split(' ')[0];
+    box.parentNode.querySelector('.fbA').textContent = b.classList.contains('r') ? '→ ' + AREAS[i][2] : (b.classList.contains('y') ? '→ Tipp: ' + AREAS[i][2] : '✓ Sehr gut.'); }); }); });
+  if (MEBIS_TEST_URL) { $('testLink').href = MEBIS_TEST_URL; } else { $('testLink').removeAttribute('href'); $('testHint').textContent = 'Öffne im mebis-Kurs den Test „WEI Chemie 9 DS1 Wasserzerlegung“.'; }
+  $('copyAll').addEventListener('click', function(){ var ids = ['he1', 'he2', 'he3'].filter(function(i){ return HE[i]; }); if (!ids.length) { $('copyAllMsg').textContent = 'Noch keine Hefteinträge vorhanden.'; return; } copyHE(ids, $('copyAllMsg')); });
+})();
+
+go(0);
+window.__S = S;
+})();
+</script>
+</body>
+</html>
