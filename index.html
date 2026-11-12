@@ -126,7 +126,7 @@ table.t th{background:#eef5fd}
       <tr><td>3</td><td>Auswertung + Hefteintrag 1</td><td>15 min</td></tr>
       <tr><td>4</td><td>Stoffe einteilen + Hefteintrag 2</td><td>15 min</td></tr>
       <tr><td>5</td><td>Dalton und Atom-Werkstatt + Hefteintrag 3</td><td>20 min</td></tr>
-      <tr><td>6</td><td>Test im mebis-Kurs + Reflexion</td><td>15 min</td></tr>
+      <tr><td>6</td><td>Selbstcheck-Test auf mebis + Reflexion</td><td>15 min</td></tr>
     </table>
     <h3>So arbeitest du</h3>
     <ul>
@@ -144,6 +144,45 @@ table.t th{background:#eef5fd}
   <div class="card">
     <h2>1.1 Was passiert mit Wasser unter Strom?</h2>
     <p class="lead">Im Hofmann-Apparat wird <b>Wasser</b> (ein Reinstoff) an zwei Metallstäben an <b>elektrischen Strom</b> angeschlossen. Was erwartest du? Es gibt noch keine richtige Antwort. Du legst dich fest und prüfst deine Vermutung später am Versuch.</p>
+    <figure style="margin:0 0 12px"><div style="max-width:560px"><svg viewBox="0 0 600 400" class="wsvg" role="img" aria-label="Aufbau des Hofmann'schen Zersetzungsapparats" font-family="Segoe UI,Arial,sans-serif" font-size="14">
+      <rect x="1" y="1" width="598" height="398" rx="12" fill="#fff" stroke="#c9d6e4"/>
+      <!-- Wasser -->
+      <path d="M118 96 V312 H482 V96 H442 V272 H312 V96 H288 V272 H158 V96 Z" fill="#8cc8f2"/>
+      <circle cx="300" cy="62" r="34" fill="#cfe9fb"/><path d="M270 70 A34 34 0 0 0 330 70 Z" fill="#8cc8f2"/>
+      <!-- Glas -->
+      <rect x="118" y="96" width="40" height="216" fill="none" stroke="#44617f" stroke-width="3"/>
+      <rect x="442" y="96" width="40" height="216" fill="none" stroke="#44617f" stroke-width="3"/>
+      <rect x="288" y="96" width="24" height="216" fill="none" stroke="#44617f" stroke-width="3"/>
+      <circle cx="300" cy="62" r="34" fill="none" stroke="#44617f" stroke-width="3"/>
+      <rect x="118" y="272" width="364" height="40" fill="none" stroke="#44617f" stroke-width="3"/>
+      <rect x="289" y="272" width="22" height="39" fill="#8cc8f2"/>
+      <!-- Hähne -->
+      <rect x="126" y="80" width="24" height="16" fill="#9aa5b1" stroke="#6b7684"/><rect x="450" y="80" width="24" height="16" fill="#9aa5b1" stroke="#6b7684"/>
+      <!-- Skala -->
+      <g stroke="#44617f">
+        <path d="M118 120 h-10 M118 160 h-10 M118 200 h-10 M118 240 h-10"/><path d="M482 120 h10 M482 160 h10 M482 200 h10 M482 240 h10"/>
+      </g>
+      <!-- Metallstäbe -->
+      <rect x="135" y="214" width="6" height="86" fill="#707b87"/><rect x="459" y="214" width="6" height="86" fill="#707b87"/>
+      <!-- Kabel -->
+      <path d="M138 300 V340 H236" fill="none" stroke="#1b2a3a" stroke-width="3"/><path d="M462 300 V340 H364" fill="none" stroke="#1b2a3a" stroke-width="3"/>
+      <!-- Stromquelle -->
+      <rect x="236" y="322" width="128" height="52" rx="8" fill="#12304f"/><text x="300" y="345" text-anchor="middle" fill="#fff" font-weight="700">Stromquelle</text>
+      <text x="252" y="366" fill="#ff9d9d" font-weight="700" font-size="18">−</text><text x="340" y="366" fill="#ffd27a" font-weight="700" font-size="18">+</text>
+      <!-- Beschriftungen -->
+      <text x="138" y="64" text-anchor="middle" fill="#12304f" font-weight="700">Minuspol (−)</text>
+      <text x="462" y="64" text-anchor="middle" fill="#12304f" font-weight="700">Pluspol (+)</text>
+      <text x="300" y="14" text-anchor="middle" fill="#5b6b7c" font-size="12">Vorratsgefäß</text>
+      <g fill="#5b6b7c" font-size="12.5">
+        <text x="12" y="126">Skala</text><text x="12" y="142">in mL</text>
+        <text x="10" y="248" >Metallstab</text><text x="10" y="264">(Elektrode)</text>
+        <text x="496" y="108">Hahn</text><text x="496" y="124" font-size="11">oben</text>
+        <text x="496" y="200">Glasröhre</text>
+        <text x="190" y="226">Wasser mit Zusatz</text>
+      </g>
+      <path d="M78 252 L132 252" stroke="#5b6b7c" marker-end="url(#ah)"/><path d="M490 120 L452 92" stroke="#5b6b7c" stroke-width="1" fill="none"/>
+      <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8z" fill="#5b6b7c"/></marker></defs>
+    </svg></div><figcaption class="hint">So sieht der Versuchsaufbau aus, den du aus dem Video kennst. Das Wasser enthält einen Zusatz, damit der Strom fließen kann. In der Simulation kann die Seite von Plus- und Minuspol vertauscht sein.</figcaption></figure>
     <div id="vWhat" class="task"></div>
     <div id="vGas" class="task"></div>
     <div id="vRatio" class="task"></div>
@@ -266,9 +305,9 @@ table.t th{background:#eef5fd}
     <h2>Abschluss</h2>
     <h3>1 · Wie sicher fühlst du dich?</h3>
     <div id="ampel"></div>
-    <h3>2 · Test im mebis-Kurs (ca. 10–15 Minuten)</h3>
-    <p>Der Test prüft, was du heute gelernt hast. Du bekommst nach jeder Frage eine Rückmeldung. Am Ende steht eine kurze Reflexion.</p>
-    <p><a id="testLink" class="pill" href="#" target="_blank" rel="noopener">Test im mebis-Kurs öffnen</a> <span class="hint" id="testHint"></span></p>
+    <h3>2 · Selbstcheck-Test „Aufbau der Stoffe“ auf mebis (ca. 10–15 Minuten)</h3>
+    <p>Der Selbstcheck prüft, was du heute gelernt hast. Du hast <b>zwei Versuche</b> und bekommst nach jeder Frage eine Rückmeldung. Am Ende steht eine kurze Reflexion. Du musst dafür bei mebis angemeldet sein.</p>
+    <p><a id="testLink" class="pill" href="#" target="_blank" rel="noopener" style="font-size:1.05rem;padding:8px 16px">▶ Selbstcheck-Test „Aufbau der Stoffe“ öffnen</a> <span class="hint" id="testHint"></span></p>
     <h3>3 · Alle Hefteinträge auf einmal kopieren</h3>
     <p class="hint">Falls du einen Eintrag vergessen hast: Hier ist alles zusammen.</p>
     <div class="copyrow"><button id="copyAll" class="primary">Alles in die Zwischenablage kopieren</button><span class="hint" id="copyAllMsg"></span></div>
@@ -374,7 +413,7 @@ if (typeof module !== 'undefined') module.exports = DRAW;
 <script>
 (function(){
 'use strict';
-var MEBIS_TEST_URL = ''; /* hier den Link zum mebis-Test eintragen (optional) */
+var MEBIS_TEST_URL = 'https://lernplattform.bycs.de/mod/quiz/view.php?id=105326891'; /* mebis: Selbstcheck-Test - Aufbau der Stoffe */
 var $ = function(id){ return document.getElementById(id); };
 var $$ = function(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 var shuffle = function(a){ a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
@@ -754,7 +793,7 @@ function enterStep5() {
   $$('.ampel').forEach(function(box, i){ $$('button', box).forEach(function(b){ b.addEventListener('click', function(){
     $$('button', box).forEach(function(x){ x.classList.remove('sel'); }); b.classList.add('sel'); S.ampel[box.dataset.k] = b.className.split(' ')[0];
     box.parentNode.querySelector('.fbA').textContent = b.classList.contains('r') ? '→ ' + AREAS[i][2] : (b.classList.contains('y') ? '→ Tipp: ' + AREAS[i][2] : '✓ Sehr gut.'); }); }); });
-  if (MEBIS_TEST_URL) { $('testLink').href = MEBIS_TEST_URL; } else { $('testLink').removeAttribute('href'); $('testHint').textContent = 'Öffne im mebis-Kurs den Test „WEI Chemie 9 DS1 Wasserzerlegung“.'; }
+  if (MEBIS_TEST_URL) { $('testLink').href = MEBIS_TEST_URL; } else { $('testLink').removeAttribute('href'); $('testHint').textContent = 'Öffne im mebis-Kurs den Selbstcheck-Test „Aufbau der Stoffe“.'; }
   $('copyAll').addEventListener('click', function(){ var ids = ['he1', 'he2', 'he3'].filter(function(i){ return HE[i]; }); if (!ids.length) { $('copyAllMsg').textContent = 'Noch keine Hefteinträge vorhanden.'; return; } copyHE(ids, $('copyAllMsg')); });
 })();
 

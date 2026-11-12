@@ -398,7 +398,7 @@ details.dsec{display:block}
         <li><b>Knallgasprobe → Wasserstoff.</b> Das Gas wird in einem Reagenzglas aufgefangen und an die Flamme gehalten. Wasserstoff macht ein dumpfes „Plopp“.</li>
       </ul>
     </div>
-    <p style="margin:0 0 6px">Welches Gas ist in welchem Schenkel? Wähle den Schenkel und eine Probe. Zuerst planst du den Ablauf, dann läuft er ab. Danach hältst du Beobachtung und Schluss fest.</p>
+    <p style="margin:0 0 6px">Welches Gas ist in welchem Schenkel? Wähle den Schenkel und eine Probe. <span id="planTxt">Zuerst planst du den Ablauf, dann läuft er ab. </span>Danach hältst du Beobachtung und Schluss fest.</p>
     <div class="row">
       <span>Gas prüfen aus:</span>
       <label class="opt"><input type="radio" name="armS" value="0" class="js-arm" checked> linkem Schenkel</label>
@@ -956,6 +956,7 @@ function renderProtoList() {
 
 /* ---------- Handlungsreihenfolge (Schüler) ---------- */
 function orderChallenge(title, steps, wrongs, info) {
+  if (KURZ) return Promise.resolve();
   return new Promise(res => {
     const box = $('orderBox'); let idx = 0;
     const cards = shuffle([...steps.map((t, i) => ({ t, i })), ...wrongs.map(w => ({ t: w.t, wrong: true, why: w.why }))]);
@@ -1372,7 +1373,7 @@ $('prDownload').addEventListener('click', () => {
 
 /* ---------- Steuerung ---------- */
 const KURZ = /kurz/i.test(location.search + location.hash);
-if (KURZ) document.documentElement.classList.add('kurz');
+if (KURZ) { document.documentElement.classList.add('kurz'); $('planTxt').textContent = 'Der Ablauf der Probe läuft automatisch ab. '; }
 const intro = {
   student: 'Willkommen! Bearbeite die fünf Phasen rechts der Reihe nach. Beginne mit deiner Vermutung.',
   demo: 'Zuerst die Vermutungen der Klasse sammeln (rechts). Dann die Stromquelle einschalten und beobachten.'
