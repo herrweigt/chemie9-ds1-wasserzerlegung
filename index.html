@@ -332,25 +332,27 @@ var DRAW = (function () {
     var seq = kind === 'gemisch' ? ['A2', 'B2', 'A2', 'B2', 'B2', 'A2'] : names;
     return frame(grid(seq, 52, 62, 3, 78, 56), 270, 150, label);
   }
-  /* Hofmann-Skizze mit Gasvolumina (mL) */
-  function hofmann(vMinus, vPlus, vMax) {
-    var H = 170, top = 30, per = H / (vMax || 20);
+  /* Hofmann-Skizze: Gas sammelt sich oben, Skala beginnt oben bei 0 mL und wächst nach unten */
+  function hofmann(vMinus, vPlus) {
+    var H = 175, top = 46, MAX = 25, per = H / MAX;
     function tube(x, v, lab) {
-      var g = '<rect x="' + x + '" y="' + top + '" width="34" height="' + H + '" fill="#f2f8ff" stroke="#44617f" stroke-width="2"/>';
-      g += '<rect x="' + (x + 1) + '" y="' + (top + 1 + (H - 2) - 0) + '" width="0" height="0"/>';
-      var hg = v * per;
-      g += '<rect x="' + (x + 1) + '" y="' + (top + 1) + '" width="32" height="' + (H - 2 - hg) + '" fill="#d6ecff"/>';
-      g += '<rect x="' + (x + 1) + '" y="' + (top + 1 + H - 2 - hg) + '" width="32" height="' + hg + '" fill="#fff6c9"/>';
-      for (var i = 0; i <= (vMax || 20); i += 5) {
-        var y = top + H - i * per;
+      var gh = v * per, g = '';
+      g += '<rect x="' + (x + 12) + '" y="' + (top - 14) + '" width="10" height="14" fill="#9aa5b1" stroke="#6b7684"/>';
+      g += '<rect x="' + x + '" y="' + top + '" width="34" height="' + H + '" fill="#8cc8f2" stroke="#44617f" stroke-width="2"/>';
+      g += '<rect x="' + (x + 1) + '" y="' + (top + 1) + '" width="32" height="' + gh + '" fill="#f1f3f5"/>';
+      g += '<line x1="' + (x + 1) + '" y1="' + (top + gh) + '" x2="' + (x + 33) + '" y2="' + (top + gh) + '" stroke="#1d4f91" stroke-width="2"/>';
+      if (gh > 30) g += '<text x="' + (x + 17) + '" y="' + (top + gh / 2 + 4) + '" text-anchor="middle" font-size="11" fill="#5b6b7c">Gas</text>';
+      g += '<text x="' + (x + 17) + '" y="' + (top + gh + (H - gh) / 2 + 4) + '" text-anchor="middle" font-size="11" fill="#12304f">Wasser</text>';
+      for (var i = 0; i <= MAX; i += 5) {
+        var y = top + i * per;
         g += '<line x1="' + (x + 34) + '" y1="' + y + '" x2="' + (x + 44) + '" y2="' + y + '" stroke="#44617f"/><text x="' + (x + 48) + '" y="' + (y + 4) + '" font-size="12" fill="#12304f">' + i + '</text>';
       }
-      g += '<text x="' + (x - 4) + '" y="' + (top + H + 24) + '" font-size="14" font-weight="700" fill="#12304f">' + lab + '</text>';
+      g += '<text x="' + (x + 17) + '" y="' + (top + H + 24) + '" text-anchor="middle" font-size="14" font-weight="700" fill="#12304f">' + lab + '</text>';
       return g;
     }
     var inner = tube(50, vMinus, 'Minuspol') + tube(190, vPlus, 'Pluspol') +
-      '<text x="14" y="20" font-size="12" fill="#5b6b7c">Gasvolumen in mL</text>';
-    return frame(inner, 290, 250);
+      '<text x="14" y="22" font-size="12" fill="#5b6b7c">Skala in mL (0 mL oben, Gas oben)</text>';
+    return frame(inner, 290, 270);
   }
   /* Gleichungsbilder A-D (Zerlegung von 2 Wasser-Teilchen) */
   function eq(kind, label) {
@@ -561,7 +563,7 @@ function enterStep3() {
   mc($('tPole'), { q: 'a) An welchem Pol entsteht Wasserstoff, an welchem Sauerstoff? (Schau auf deine Nachweise.)', key: 'a', opts: [
     { t: 'Minuspol: Wasserstoff · Pluspol: Sauerstoff', ok: true, fb: 'Richtig: Am Minuspol (Knallgasprobe: „Plopp“) entsteht Wasserstoff, am Pluspol (Glimmspan flammt auf) Sauerstoff.' },
     { t: 'Minuspol: Sauerstoff · Pluspol: Wasserstoff', fb: 'Vertauscht. Welcher Schenkel hat bei der Knallgasprobe „Plopp“ gemacht, und welcher Pol gehört zu ihm?' },
-    { t: 'An beiden Polen entsteht Wasserstoff.', fb: 'Du hast zwei verschiedene Nachweise gemacht und zwei verschiedene Ergebnisse.' }],
+    { t: 'Minuspol: Wasserstoff · Pluspol: Wasserstoff', fb: 'Du hast zwei verschiedene Nachweise gemacht und zwei verschiedene Ergebnisse.' }],
     tip: 'Nachweis: Knallgasprobe → Wasserstoff, Glimmspanprobe → Sauerstoff. Welcher Schenkel hängt am Minuspol?', onOk: function(){ S.ok.pole = true; } });
   /* b */
   mc($('tRatio'), { q: 'b) Vergleiche die Gasvolumina in deiner Tabelle (Hefteintrag unten). Wasserstoff : Sauerstoff verhält sich ungefähr wie …', key: 'b', opts: [
@@ -571,11 +573,11 @@ function enterStep3() {
     { t: '3 : 1', fb: 'Das wäre dreimal so viel. Rechne an deinen Werten nach.' }], onOk: function(){ S.ok.ratio = true; } });
   /* c */
   mc($('tReason'), { q: 'c) Begründe: Warum ist die Zerlegung von Wasser <b>kein</b> physikalischer Vorgang, sondern eine chemische Reaktion? Wähle <b>alle</b> richtigen Aussagen.', multi: true, key: 'c', opts: [
-    { t: 'Es entstehen neue Stoffe (Wasserstoff und Sauerstoff) mit anderen Eigenschaften als Wasser.', ok: true },
-    { t: 'Die Gase lassen sich mit Knallgasprobe und Glimmspanprobe nachweisen, Wasser verhält sich bei diesen Proben anders.', ok: true },
-    { t: 'Das Wasser wird nur warm und verdampft.', fb: 'Beim Verdampfen bleibt Wasser Wasser. Hier entstehen aber Gase, die kein Wasser sind.' },
-    { t: 'Die Stoffe lassen sich durch Filtrieren wieder trennen.', fb: 'Filtrieren trennt Stoffgemische (physikalisch). Wasser ist ein Reinstoff.' },
-    { t: 'Dem Wasser wird Energie zugeführt, und es verschwindet dabei (Stoffumsatz).', ok: true }],
+    { t: 'Es entstehen neue Stoffe, deren Eigenschaften sich von Wasser unterscheiden.', ok: true },
+    { t: 'Die Gase reagieren bei Knallgas- und Glimmspanprobe anders als Wasser.', ok: true },
+    { t: 'Dem Wasser wird Energie zugeführt, und es wird zu anderen Stoffen umgesetzt.', ok: true },
+    { t: 'Das Wasser geht beim Erhitzen vom flüssigen in den gasförmigen Zustand über.', fb: 'Das wäre ein physikalischer Vorgang (Verdampfen). Hier entstehen aber neue Stoffe.' },
+    { t: 'Die entstandenen Gase lassen sich durch Filtrieren wieder zu Wasser vereinigen.', fb: 'Filtrieren trennt Stoffgemische. Wasser entsteht aus den Gasen nicht durch Filtrieren.' }],
     okFb: 'Richtig: neue Stoffe mit anderen Eigenschaften (Stoffumsatz) plus Energieumsatz sind die Kennzeichen einer chemischen Reaktion.', onOk: function(){ S.ok.reason = true; } });
   /* d */
   var ta = $('hypText');
@@ -586,9 +588,9 @@ function enterStep3() {
     refresh(); });
   /* e */
   mc($('tEnergyQ'), { q: 'Was folgt daraus für die Herstellung von Wasserstoff aus Wasser?', key: 'e', opts: [
-    { t: 'Man muss dafür viel Energie (z. B. Strom) aufwenden. Das macht „grünen“ Wasserstoff teuer.', ok: true, fb: 'Richtig. Beim Verbrennen bekommt man höchstens so viel Energie zurück, wie man hineingesteckt hat. Im Alltag geht noch etwas verloren.' },
-    { t: 'Wasserstoff aus Wasser ist kostenlos, weil Wasser überall vorhanden ist.', fb: 'Das Wasser ist günstig, aber die Zerlegung braucht ständig Energie. Schau auf die Stromquelle im Versuch.' },
-    { t: 'Bei der Zerlegung wird Energie frei, die man nutzen kann.', fb: 'Umgekehrt: Ohne Strom entsteht kein Gas.' }], onOk: function(){ S.ok.energy = true; } });
+    { t: 'Man braucht fortlaufend viel Energie (z. B. Strom). Das macht „grünen“ Wasserstoff teuer.', ok: true, fb: 'Richtig. Beim Verbrennen bekommt man höchstens so viel Energie zurück, wie man hineingesteckt hat. Im Alltag geht noch etwas verloren.' },
+    { t: 'Wasser ist als Rohstoff teuer, deshalb ist Wasserstoff aus Wasser kostspielig.', fb: 'Das Wasser ist günstig, aber die Zerlegung braucht fortlaufend Energie. Schau auf die Stromquelle im Versuch.' },
+    { t: 'Bei der Zerlegung wird Energie frei, die man dann aufwändig speichern muss.', fb: 'Umgekehrt: Ohne Strom entsteht kein Gas.' }], onOk: function(){ S.ok.energy = true; } });
   buildHE('he1', 'Hefteintrag 1', [
     { h2: '1 Zerlegung von Wasser (Hofmann-Versuch)' },
     { h3: '1.1 Beobachtung' },
@@ -644,9 +646,9 @@ function enterStep3() {
   mc($('tSimple'), { q: 'Das einfache Teilchenmodell kennst du: Jeder Stoff besteht aus unteilbaren Kugeln. Bei der Zerlegung wird aus Wasser-Teilchen etwas ganz anderes. Reicht das einfache Modell aus, um das zu erklären?',
     img: '<svg viewBox="0 0 420 110" width="420" height="110" font-family="Segoe UI,Arial" font-size="14"><rect x="1" y="1" width="418" height="108" rx="10" fill="#fff" stroke="#8aa0b8" stroke-width="2"/><circle cx="60" cy="55" r="22" fill="#3b82d6"/><circle cx="110" cy="55" r="22" fill="#3b82d6"/><text x="165" y="62" font-size="26">→</text><circle cx="230" cy="55" r="22" fill="#e5483b"/><text x="262" y="60" font-size="22">+</text><circle cx="310" cy="55" r="22" fill="#9aa5b1"/><circle cx="360" cy="55" r="22" fill="#9aa5b1"/><text x="40" y="100" font-size="12" fill="#12304f">Wasser</text><text x="212" y="100" font-size="12" fill="#12304f">Sauerstoff</text><text x="300" y="100" font-size="12" fill="#12304f">Wasserstoff</text></svg>',
     opts: [
-      { t: 'Nein. Unteilbare Kugeln können sich nicht in Kugeln anderer Stoffe verwandeln. Die Teilchen müssen aus kleineren Bausteinen bestehen.', ok: true, fb: 'Richtig. Genau diese Idee führt zum Atommodell von Dalton (Abschnitt 3).' },
-      { t: 'Ja. Die Kugeln verwandeln sich einfach in andere Kugeln.', fb: 'Dann würde ein Stoff in einen ganz anderen übergehen, ohne dass man erklären kann, warum doppelt so viel Wasserstoff entsteht.' },
-      { t: 'Ja. Die Kugeln verschwinden beim Zerlegen einfach.', fb: 'Teilchen verschwinden nicht. Die entstehenden Gase muss man ja auch erklären.' }],
+      { t: 'Nein. Dazu müssten Teilchen aus kleineren Bausteinen bestehen, die sich neu ordnen.', ok: true, fb: 'Richtig. Genau diese Idee führt zum Atommodell von Dalton (Abschnitt 3).' },
+      { t: 'Ja. Die Kugeln verwandeln sich beim Zerlegen in Kugeln anderer Stoffe um.', fb: 'Dann bliebe offen, warum doppelt so viel Wasserstoff wie Sauerstoff entsteht.' },
+      { t: 'Ja. Die Kugeln des Wassers verschwinden, und neue Kugeln erscheinen dabei.', fb: 'Teilchen verschwinden nicht einfach. Außerdem müsste man erklären, woher die neuen kommen.' }],
     onOk: function(){ S.ok.simple = true; } });
   buildHE('he2', 'Hefteintrag 2', [
     { h2: '2 Einteilung der Stoffe' },
